@@ -1,0 +1,7 @@
+{
+  "database" : "Pg",
+  "dbname" : "sample-storage",
+  "user" : "sample-storage-user",
+  "password" : "",
+  "host" : "127.0.0.1"
+}

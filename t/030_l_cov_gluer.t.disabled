@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+
+use strict;
+use FindBin;
+use lib $FindBin::Bin."/../lib";
+
+use Path::Tiny;
+
+use Trakt;
+use Test::More tests => 2;
+
+my $branch_name = 'none';
+
+my $trakt_name = "030_l_cov_gluer/l_cov_gluer_trakt";
+
+my $tmp_dir = path($FindBin::Bin."/tmp");
+$tmp_dir->remove_tree if $tmp_dir->exists;
+
+
+my $trakt = Trakt->create(name => $trakt_name, branch => $branch_name);
+$trakt->work_dir($tmp_dir); # Устанавливаем временную директорию как рабочую директорию тракта...
+
+
+select(STDERR); # перенаправляем стандартый вывод на STDERR чтобы не мешал тестированию
+$trakt->run();
+select(STDOUT); #возвращаем стандарный вывод на место и приступаем к тестированию...
+
+my $lcovclip_file = path($FindBin::Bin."/tmp/030_l_cov_gluer/l_cov_gluer_trakt.none.res/LCovClip.html");
+my $lcovclip_test_file = path($FindBin::Bin."/030_l_cov_gluer/data/LCovClip.html");
+
+# Test1.
+ok($lcovclip_file->exists, 'Проверяем, что файл LCovClip.html для всего тракта пишется в правильное место.');
+
+my $lcc_file = $lcovclip_file->slurp;
+my $lcc_test_file = $lcovclip_test_file->slurp;
+
+# Test2.
+is($lcc_file, $lcc_test_file, 'содержание файла LCovClip.html тракта правильное');
+
+$tmp_dir->remove_tree;
+
+done_testing();
+

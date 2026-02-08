@@ -1,0 +1,90 @@
+package Local::Step1;
+
+use Moose;
+extends 'Trakt::Step';
+
+
+=cut
+# Добавьте сюда список deb пакетов которые нужны для запуска этого шага и его целей.
+around 'debdeps' => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    return ($self->$orig(@_), qw(packet1 packet2));
+};
+
+=cut
+
+# Метод augment вызывается из родительского метода при помощи вызова inner()
+augment 'run' => sub
+{
+  my $self = shift;
+
+  my $step_name = $self->name;
+
+  print "Запускаем шаг '$step_name'\n";
+  $self->run_command('step1', "echo Работает шаг '$step_name'");
+
+};
+
+1;
+
+
+package Local::Step1::Target;
+
+use Moose;
+extends 'Trakt::Target';
+
+
+#around 'before_run' => sub {
+#  my $orig = shift;
+#  my $self = shift;
+#  my @args = @_;
+#
+#  # Действия которые должны быть сделаны перед запуском, но до родительского обработчика before_run
+#  # (то что нужно тобы родительский before_run отработал. Например подмонтировать раздел для работы)
+#
+#  my $res = $self->$orig(@args);
+
+#  # Действия которые должны быть сделаны перед запуском, но после родительского обработчика before_run
+#  # (например в уже созданной before_run стурктуре поправить какой-то файл)
+
+#  return $res
+#};
+
+
+around 'core_run' => sub {
+  my $orig = shift;
+  my $self = shift;
+  my @args = @_;
+
+  my $target_name = $self->name;
+  my $step_name = $self->step->name;
+
+#  config.json из директории шага, если надо...
+#  my $conf = $self->step->conf;
+
+  print "Запускаем цель '$target_name'\t шага '$step_name'\n";
+  $self->run_command('tag1', "echo Работает цель '$target_name'\t шага '$step_name'");
+
+  # Запускаем родительский код основного запуска
+  $self->$orig(@args);
+};
+
+#around 'after_run' => sub {
+#  my $orig = shift;
+#  my $self = shift;
+#  my @args = @_;
+#
+#  # Действия которые должны быть сделаны после запуска, но до родительского обработчика after_run
+#  # (то что нужно тобы родительский before_run отработал. Например отмонтировать хранящиеся в директории кеша образы, чтобы их можно было удалить стандартной очисткой)
+#
+#  my $res = $self->$orig(@args);
+
+#  # Действия которые должны быть сделаны посое запуском, но после родительского обработчика after_run
+
+#  return $res
+#};
+
+
+1;

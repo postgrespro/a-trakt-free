@@ -1,0 +1,6 @@
+{
+  "type" : "crash",
+  "crash" : 1,
+  "cr_type" : "trap",
+  "assertion" : "BBB"
+}
