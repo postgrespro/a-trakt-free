@@ -7,16 +7,78 @@ use String::ShellQuote;
 has 'trakt' => (is => 'ro', required => 1, isa => "Trakt");
 has 'default_build' => (is => 'rw', default => "none"); # Сборка по умолчанию, если делаются какие-то информационные запросы общего характера к исследуемой программе (например получить список целей), то делаются они именно к этому варианту сборки. Должно быть переопределено.
 
+
 # Заготовка которая должна быть переопределена
 # Функция которая возвращает поногое (или относительное) имя бинарника исследуемой программы в заданой сборке
+# FIXME библиотека она вообще тоже binary. Правильно executable. Но тут все равно все надо переделывать.
 sub binary
 {
   my $self = shift;
   my $build_name = shift;
   my $target_name = shift; # Бывает так что у нас отдельный бинарник для каждой цели
   # return "build/$build_name/install/my_cool_executable
+  die "This function must be overridden!"
+}
+
+# Этот метод должен возвращать ссылку на список путей по которым будут искаться подгружаемые библиотеки
+# Этот метод должен быть переопределен если вы хотите подгружать хоть какие-то библиотеки
+sub lib_dirs
+{
+  my $self = shift;
+  my $build_name = shift;
+
+  my $build_target = $self->trakt->step('build')->target($build_name);
+  my $lib_dir = $build_target->stapel->install_dir->child("lib")->absolute;
+
+  # return ["$root/build/$build_name/install/lib"]
   die "This function should be overridden!"
 }
+
+
+# Этот метод должен возвращать имена (без путей) библиотек которые должны быть подгружены при запуске цели
+# библиотеки с этими именами будут искаться среди путей возвращаемых методом lib_dirs и подгржуаться посредством
+# LD_PRELOAD или AFL_PRELOAD при запуске цели или фаззинга цели.
+# Этот метод следует переопределить, если вам надо подгружать какие-то библиотеки.
+sub preload_libs
+{
+  my $self = shift;
+  my $target_name = shift; # На случай если как-то зависит от имени цели
+
+  # Переопределите если надо что-то подгружать.
+  # return ['libexample.so', 'libcool.so'];
+  return [];
+}
+
+
+# Этот метод возвращает сткроку со списком всех подгружаемых библиотек пригодную для подстановки
+# в переменную окружения LD_PRELOAD или ADL_PRELOAD в shell-команде
+# Эту фнункцию переопределять в норме не надо.
+sub preload_lib_env
+{
+  my $self = shift;
+  my $build_name = shift;
+  my $target_name = shift; # на случай если зависит от выбранной цели
+
+  my $res = '';
+  my $libs = $self->preload_libs($target_name);
+  foreach my $lib (@$libs)
+  {
+    my $is_found = 0;
+    foreach my $path (@{$self->lib_dirs($build_name, $target_name)})
+    {
+      my $file = $path->child($lib);
+      if ($file->exists)
+      {
+        $is_found = 1;
+        $res .= ":" if $res;
+        $res .= shell_quote($file);
+      }
+      die "Library '$lib' not found" unless $is_found;
+    }
+  }
+  return $res;
+}
+
 
 # Заготовка которая должна быть переопределена
 # Функция которая возвращает команду которая заупстит бинарник исследуемой программы в заданной сборке, с заданной целью, с заданными входными данными
@@ -149,6 +211,36 @@ sub targets
 sub dump_reproducer_command
 {
   return;
+}
+
+# Список бинарников (исполняемых и библиотек) которые были вообще затронуты в процессе фаззинга
+# В первую очередь для построения покрытия. Может еще для чего-то.
+# В норме не переопределяется
+sub affected_binaries
+{
+  my $self = shift;
+  my $build_name = shift;
+  my $target_name = shift;
+
+  my $res = [$self->binary($build_name, $target_name)];
+
+  # FIXME этот цикл почти дублирует код из preload_lib_env надо как-то объединить умно
+  my $libs = $self->preload_libs($target_name);
+  foreach my $lib (@$libs)
+  {
+    my $is_found = 0;
+    foreach my $path (@{$self->lib_dirs($build_name, $target_name)})
+    {
+      my $file = $path->child($lib);
+      if ($file->exists)
+      {
+        $is_found = 1;
+        push @$res, $file;
+      }
+      die "Library '$lib' not found" unless $is_found;
+    }
+  }
+  return $res;
 }
 
 1;

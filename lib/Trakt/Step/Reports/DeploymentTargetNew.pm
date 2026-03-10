@@ -22,8 +22,8 @@ around 'core_run' => sub {
   my $report_md = $res_dir->child('report.md');
   my $report_html = $res_dir->child('report.html');
 
-  $report_md->spew($self->tt_process($vars));
-  $self->run_command('convert_report', "pandoc -f markdown $report_md > $report_html");
+  $report_md->spew_utf8($self->tt_process($vars));
+  $self->run_command('convert_report', "pandoc -f markdown_strict -t html $report_md > $report_html");
 
   $self->$orig(@args)
 };

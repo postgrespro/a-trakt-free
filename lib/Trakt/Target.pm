@@ -11,6 +11,7 @@ has 'name' =>   (is => 'ro', required => 1);
 has 'parent' => (is => 'ro', required => 1, weak_ref => 1);
 has '_exchange_dir' => (is => 'rw');
 has '_cache_dir' => (is => 'rw');
+has 'is_target'  => (is => 'ro', isa => 'Bool', default => 1);
 
 
 with 'Trakt::CommandExecutorRole', 'Trakt::Role::SelfReport';

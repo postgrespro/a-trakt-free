@@ -1,0 +1,5 @@
+[step3.my_config]
+list = ["value1", "value2", "value3"]
+
+[step3]
+watch_dog = { hash = { key = "value1" } }

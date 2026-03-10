@@ -44,6 +44,7 @@ $fuzz_stats_json->{last_find} ||= $fuzz_stats_json->{start_time}; # В AFL ес�
 my $res = {};
 
 $res->{last_path} = $now - $fuzz_stats_json->{last_find};
+$res->{run_time} = $fuzz_stats_json->{run_time};
 
 foreach my $key (@limits_keys)
 {

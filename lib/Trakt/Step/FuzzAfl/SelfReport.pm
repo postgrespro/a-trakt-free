@@ -11,7 +11,12 @@ sub get_tt
   die "Неизвестный шаблон '$name'" unless $name eq 'main';
 
   return "
-[% target_name = self.targets.0 %]
+[% IF self.targets.0 %] [%# Вернули ли нам список или скаляр %]
+  [% target_name = self.targets.0 %]
+[% ELSE %]
+  [% target_name = self.targets %]
+[% END %]
+
 ## Запуск фаззинг-исследования на примере цели `[% target_name %]`
 
 [% self.target(target_name).self_report %]

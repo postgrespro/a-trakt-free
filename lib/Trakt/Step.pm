@@ -12,6 +12,9 @@ has 'parent' => (is => 'ro', required => 1, weak_ref => 1);
 has '_targets' => (is => 'rw', default => sub {return {}});
 has '_exchange_dir' => (is => 'rw');
 has '_cache_dir' => (is => 'rw');
+has '_config' => (is => 'rw', default => sub {return {}});
+has 'is_target' => (is => 'ro', isa => 'Bool', default => 0);
+
 has 'eternal' => (is => 'ro', required => 1, isa => 'Bool', default => 0);  # вечный шаг никогда не переходит в состояние done сам по себе.
 
 with 'Trakt::CommandExecutorRole', 'Trakt::Role::SelfReport';
@@ -77,25 +80,30 @@ sub done_flag
 sub conf
 {
   my $self = shift;
-  return  $self->{_conf} if defined $self->{_conf};
+  my $name = shift // "config";
 
-  my $config_name;
+  return $self->_config->{$name} if defined $self->_config->{$name};
 
-  if (-e $self->conf_dir."/config.json")
+  my $config_file = $self->conf_dir->child("$name.json");
+
+  die "Config file '$config_file' is not found" unless $config_file->exists;
+
+  my $config = undef;
+
+  my $forced_conf = $self->trakt->forced_conf;
+
+  if (ref $forced_conf                         eq 'HASH' &&
+      ref $forced_conf->{$self->name}          eq 'HASH' &&
+      ref $forced_conf->{$self->name}->{$name} eq 'HASH')
   {
-     # новый вариант именования
-     $config_name = $self->conf_dir."/config.json";
-  }
-  elsif (-e $self->conf_dir."/step.conf")
-  {
-    # старвый вариант именования. FIXME надо почистить
-    $config_name = $self->conf_dir."/step.conf";
+    $config = $forced_conf->{$self->name}->{$name};
+    # FIXME добавить сюда debig-вывод о том, что мы используем принудительный конфиг
   } else
   {
-    die "Config file for ".$self->conf_dir." step is not found (expecting '".$self->conf_dir."/config.json"."'.";
+    $config = decode_json(path($config_file)->slurp);
   }
-  $self->{_conf} = decode_json(path($config_name)->slurp);
-  return $self->{_conf};
+  $self->_config->{$name} = $config;
+  return $config;
 }
 
 sub target

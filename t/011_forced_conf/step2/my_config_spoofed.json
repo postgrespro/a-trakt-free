@@ -1,0 +1,5 @@
+{
+   "string": "spoofed_after_first_call",
+   "list": ["x", "y"],
+   "hash": {"key": "value_spoofed"}
+}

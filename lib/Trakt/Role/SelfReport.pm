@@ -31,6 +31,14 @@ sub self_report
   my $self = shift;
   my $name = shift;
 
+  # FIXME когда сделаем процедуру отладки это надо будет включить.
+  # print "Processing ";
+  # print "template '$name'" if defined $name;
+  # print "default template" unless defined $name;
+  # print " in class '".ref($self)."'; ";
+  # print "Step '".$self->name."', target '".$self->parent->name."'...\n" if $self->is_target;
+  # print "Step '".$self->name."'...\n" if !$self->is_target;
+
   my $template = $self->get_tt($name);
   my $res = $self->local_tt_process($template);
 

@@ -48,54 +48,16 @@ sub afl_extra_options
   return "";
 }
 
-sub afl_limits_config
+sub prepare_watchdog_conf
 {
     my $self = shift;
 
     my $cfg  = $self->cache_dir->child('watch_dog.conf');
-    my $json = JSON->new->pretty(1)->encode( $self->modify_watchdog_limits );
+    # Берем либо локальный конфиг, либо forced_conf и пишем его в cache-директорию
+    my $json = JSON->new->pretty->encode($self->step->conf('watch_dog'));
     $cfg->spew( $json );
 
     return $cfg;
-}
-
-sub modify_watchdog_limits {
-    my ( $self ) = @_;
-
-    my %default_limits_watchdog = $self->read_watchdog_default_limits;
-
-    my %limits;
-
-    foreach my $def_limit ( keys %default_limits_watchdog )
-    {
-      if (
-        ref $self->trakt->forced_conf->{fuzz_afl} eq 'HASH'
-        && $self->trakt->forced_conf->{fuzz_afl}->{watch_dog}->{limits}->{$def_limit}
-      ) {
-        $limits{limits}{$def_limit} = $self->trakt->forced_conf->{fuzz_afl}->{watch_dog}->{limits}->{$def_limit};
-      } else {
-        $limits{limits}{$def_limit} = $default_limits_watchdog{$def_limit};
-      }
-    }
-
-    return \%limits;
-}
-
-sub read_watchdog_default_limits
-{
-    my $self = shift;
-
-    my $json = JSON->new->relaxed;
-    my $conf = $json->decode( path( $self->trakt->conf_dir->child('fuzz_afl')->child( 'watch_dog.conf' ) )->slurp );
-
-    my %limits;
-
-    foreach my $key ( keys %{$conf->{limits}} )
-    {
-        $limits{$key} = $conf->{limits}->{$key};
-    }
-
-    return %limits;
 }
 
 around 'before_run' => sub {
@@ -145,6 +107,9 @@ sub afl_runner_conf
   my $storage_init_command = $self->trakt->convoy->instance_init_command($self->cache_dir->child('storage'), '@INSTANCE_NAME@');
   my $instance_env = $self->trakt->convoy->instance_env($self->cache_dir->child('storage'), '@INSTANCE_NAME@');
 
+  my $afl_preload = $self->trakt->convoy->preload_lib_env('afl', $target_name);
+  $instance_env->{AFL_PRELOAD} = $afl_preload if $afl_preload;
+
   my $afl_runner_options = {
     fuzzer  => "$afl_bin",
     env     =>{AFL_MAP_SIZE=>880000, ASAN_OPTIONS => "detect_leaks=0:abort_on_error=1:symbolize=0", %{$instance_env}},
@@ -188,8 +153,10 @@ sub tmux_runner_conf
 
   my $afl_command = "$runner_env $afl_start_script $afl_runner_conf";
 
+  my $watchdog_conf = $self->prepare_watchdog_conf();
+
   my $watchdog_command = $self->find_bin('afl_watch_dog.pl')." ".
-                                          shell_quote($self->afl_limits_config)." ".
+                                          shell_quote($watchdog_conf)." ".
                                           shell_quote($out_dir->child("$master_instanse_name/fuzzer_stats")). " ". shell_quote($pipe_file);
   my $runner_conf = {
     panes => [

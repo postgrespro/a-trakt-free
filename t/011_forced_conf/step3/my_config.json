@@ -1,0 +1,5 @@
+{
+   "string": "custom_string",
+   "list": ["custom_value1", "custom_value2", "custom_value3"],
+   "hash": {"key1": "custom_key1value", "key2": "custom_key2value"}
+}

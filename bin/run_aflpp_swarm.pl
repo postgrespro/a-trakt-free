@@ -74,7 +74,7 @@ sub run_instanse
   my $command_to_run = "$env_str $fuzzer $options $option $name -T $banner -- $command";
   $command_to_run .= " >/dev/null" unless $is_in_fg;
 
-  print "Runnunt $name: `$command_to_run`";
+  print "Running $name: `$command_to_run`\n";
   system($command_to_run);
   exit(0);
 }
