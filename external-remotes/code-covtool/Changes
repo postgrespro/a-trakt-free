@@ -1,0 +1,46 @@
+Revision history for Code::CovTool
+
+0.0.7 22/04/2026 18:00 MSK
+    [ADDED]
+    - добавил метод cleaning
+    - добавил тесты для cleaning
+    [CHANGED]
+    - переработал методы clip/remove: унифицировал аргументы (path | files => \@paths), фильтрацию по файлам/директориям и валидацию путей
+    - добавил обработку дубликатов и вложенных путей (duplicate/redundant path warnings) для clip/remove/cleaning
+    - расширил сценарии clip/remove: корень, вложенные папки, mixed file+dir, symlink path, пустые/несуществующие пути
+    - обновил документацию (README/POD) с примерами для cleaning и актуальным поведением clip/remove
+    - расширил тестовые данные LCOV и fixtures для кейсов с path filtering и дубликатами
+    - добавил поддержку Path::Tiny в конструкторе Code::CovTool::Sources
+    - добавил поддержку объекта Code::CovTool::Sources в методах clip/remove/cleaning
+    - оптимизировал coverage_keys_for_paths (убрал лишние вызовы coverage_keys_matching_path_info)
+
+0.0.6 03/02/2026 18:00 MSK
+    [ADDED]
+    - добавил метод clip
+    - добавил метод remove
+    - добавил метод clone
+    [CHANGED]
+    - отрефакторил код
+    - переработал документацию и вынес в POD'ы
+
+0.0.5 21/01/26 14:41 MSK
+    [ADDED]
+    - Добавил утилиту covex_analyze.pl
+
+0.0.4 18/12/2025 18:43 MSK
+    [ADDED]
+    - Добавил документацию
+    - Добавил генерацию README в markdown
+
+0.0.3 07/10/2025 22:11 MSK
+    [ADDED]
+    - Добавлен метод rebase
+
+0.0.2 01/10/2025 17:50 MSK
+    [CHANGED]
+    - Рефакторинг тестов
+    [CHANGED]
+    - Не используем внешние зависимости c++filt & ctags
+
+0.0.1  02/07/2025 12:05 MSK
+    - Первый релиз

@@ -1,0 +1,375 @@
+# Code::CovTool
+
+**Version:** v0.0.7
+
+---
+
+# NAME
+
+Code::CovTool - модуль для работы с файлами покрытия
+
+# VERSION
+
+version 0.0.7
+
+# SYNOPSIS
+
+    use Code::CovTool;
+    use Code::CovTool::Sources;
+    use Path::Tiny qw( path );
+
+    # Объект с исходными файлами
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+    my $src_pt = Code::CovTool::Sources->new( src_dir => path('/tmp/src') );
+
+    # Объекты покрытия которые планируем суммировать
+    my $f1  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+    my $f2  = Code::CovTool->new( src => $src, file => 'data2.lcov' );
+
+    # Для суммирования необходимо создать пустой объект и добавить в него объекты покрытия
+    my $total = Code::CovTool->new( src => $src );
+
+    # Проверка, что покрытие пустое
+    my $is_empty = $total->is_empty;
+
+    $total->append( $f1 );
+    $total->append( $f2 );
+
+    # Отправляем результирующий lcov-файл на stdout
+    print $total->export;
+
+    # Альтернатива получения суммы
+    my $merged = $f1->add( $f2 );
+    my $merged2 = $f1 + $f2;
+
+    # Получаем список функций в покрытии
+    my $all_function_names = $f1->get_function_list();
+    my $subtree_function_names = $f1->get_function_list( 'src/backend/regex' );
+    my $function_names_from_file = $f1->get_function_list( 'src/backend/regex/regexec.c' );
+
+    # Получаем по имени информацию про функцию
+    my $info = $f1->get_function_info( 'getsubdfa' );
+    print "Находится в файле $info->{getsubdfa}->[0]->{filename}\n";
+    print "Начиная со строки $info->{getsubdfa}->[0]->{start_line}\n";
+
+    # Получаем объект с покрытием в которое входят все строки f2 которых нет в f1.
+    my $excess  = $f1->excess( $f2 );
+    my $excess2 = $f1 < $f2;
+
+    # Получаем корень исходников
+    my $source_tree_dir = $f1->get_src_dir;
+
+    # Получаем список файлов в покрытии
+    my $files = $f1->get_file_list;
+
+    # Получаем покрытие только для указанных файлов и папок: остальные исходники исключаются из списка файлов, учитываемых при построении покрытия.
+    # Полученное покрытие сохраняется в новом экземпляре класса Code::CovTool.
+    my $clipped = $f1->clip( { files => ['src/backend/regex/regexec.c', 'src/backend/utils'] } ); # Получаем покрытие для списка файлов и папок
+    my $clipped_file_only = $f1->clip( 'src/backend/regex/regexec.c' ); # Получаем покрытие для конкретного файла
+    my $clipped_path_only = $f1->clip( 'src/backend/utils' );   # Получаем покрытие для конкретной папки
+
+    # Удаляем покрытие для указанных файлов и папок; при экспорте из отчета исчезают все SF-поля для удаленных исходников, а для остальных покрытие остается неизменным.
+    # Метод remove изменяет покрытие в вызывающем экземпляре объекта.
+    $f1->remove( { files => ['src/backend/regex/regexec.c','src/backend/utils/adt/numeric.c'] } );
+    $f1->remove( 'src/backend/regex/regexec.c' ); # удаляем файл из покрытия
+    $f1->remove( 'src/backend/utils' ); # удаляем из покрытия все файлы в указанной папке.
+
+    # Обнуляем покрытие для указанных файлов и папок, для всех остальных исходников покрытие остается неизменным.
+    # Метод remove изменяет покрытие в вызывающем экземпляре объекта.
+    $f1->cleaning( files => ['src/backend/regex/regexec.c','src/backend/utils/adt/numeric.c'] );
+    $f1->cleaning( 'src/backend/regex/regexec.c' ); # Обнуляем покрытие для конкретного файла
+    $f1->cleaning( 'src/backend/utils' ); # Обнуляем покрытие для конкретной папки
+
+    # Получаем копию существующего экземпляра класса Code::CovTool
+    my $clone_obj = $f1->clone();
+
+    # Получаем объект в котором покрытие ссылается на другой source tree и обновлены пути к исходным файлам.
+    my $old_src = Code::CovTool::Sources->new( src_dir => '/tmp/old_src'  );
+    my $old_cov = Code::CovTool->new( src => $old_src, file => 'data.lcov' );
+    my $new_src = Code::CovTool::Sources->new( src_dir => '/tmp/new_src'  );
+    my $new_cov = $old_cov->rebase( $new_src );
+
+# DESCRIPTION
+
+Библиотека предоставляет различные методы для работы с покрытием.
+Позволяет суммировать покрытия, находить превышение (покажет все строки из покрытия A которых нет в B).
+Так же позволяет накладывать различные фильтры на покрытие.
+Так же можно получать список функций в покрытии и информацию о функции (в каком файле она находится и с какой строки начинается).
+
+Поддерживает только ver1 и не поддерживает BRDA (branch coverage).
+Данная версия модуля работает только с покрытием кода на языке C.
+
+# INSTALLATION
+  perl Build.PL
+  ./Build
+  ./Build installdeps
+  ./Build test
+  ./Build install
+
+# CONSTRUCTOR
+
+## new
+
+    my $sources = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+    my $cov = Code::CovTool->new( src => $sources ); # создает пустой объект покрытия
+    $cov = Code::CovTool->new(
+      src  => $sources,
+      file => 'data.lcov'
+    ); # создает объект с данными
+
+Создает новый экземпляр класса Code::CovTool для работы с данными покрытия кода.
+
+- **src** (требуется)
+
+    Объект Code::CovTool::Sources, содержащий информацию об исходных файлах.
+
+- **file** (опционально)
+
+    Путь к файлу lcov формата для парсинга.
+
+Вернет объект Code::CovTool
+
+# METHODS
+
+### add
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $f1  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+    my $f2  = Code::CovTool->new( src => $src, file => 'data2.lcov' );
+
+    my $merged = $f1->add( $f2 );
+    my $merged2 = $f1 + $f2;
+
+Суммирует два набора данных покрытия.
+Возвращает новый объект Code::CovTool, содержащий объединенные данные.
+
+Оператор перегружен: можно использовать `$cov1 + $cov2`.
+
+- **$f2** (требуется)
+
+    Объект Code::CovTool для суммирования
+
+Возвращает новый объект Code::CovTool
+
+### append
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $f1  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+    my $f2  = Code::CovTool->new( src => $src, file => 'data2.lcov' );
+
+    my $total = Code::CovTool->new( src => $src ); # создаем пустой объект покрытия
+
+    $total->append( $f1 );
+    $total->append( $f2 );
+
+Добавляет данные покрытия из другого объекта к текущему.
+Данные не суммируются немедленно, а сохраняются для последующей обработки.
+
+- **$f1** (требуется)
+
+    Объект Code::CovTool, данные которого нужно добавить
+
+- **$f2** (опционально)
+
+    Объект Code::CovTool, данные которого нужно добавить
+
+Не возвращает значения
+
+### clip
+
+    my $clipped = $f1->clip( { files => ['src/backend/regex/regexec.c', 'src/backend/utils'] } );
+    my $clipped_file_only = $f1->clip( 'src/backend/regex/regexec.c' );
+    my $clipped_path_only = $f1->clip( 'src/backend/utils' );
+
+Получает покрытие для указанных файлов и папок; все остальные исходники удаляются из покрытия.
+Полученное покрытие сохраняется в новом экземпляре класса Code::CovTool (исходный объект не изменяется).
+
+Один аргумент-строка интерпретируется как `files => [ $path ]`.
+
+Проверки: пути должны существовать в дереве исходников; дубликаты дедуплицируются с warning.
+
+**Семантика сопоставления путей** (общая для `clip`, `remove`, `cleaning`):
+
+- Относительные пути разрешаются относительно `src_dir`; абсолютные сопоставляются с абсолютными путями `SF` напрямую. Оба варианта дают одинаковый результат для одного и того же файла.
+- Аргумент-каталог сопоставляется по границе компонента пути: `utils` удаляет/обнуляет/оставляет содержимое `utils/...`, но не задевает соседний `utils_helpers/...`.
+- Завершающий слеш в аргументе допустим и не влияет на результат. Сегменты `.` и `..` в пути нормализуются перед сравнением.
+- Если ни один файл покрытия не совпал с аргументом — `remove` и `cleaning` выдают warning `No coverage data matches path(s)` и не меняют покрытие; `clip` возвращает новый пустой объект.
+
+Если передан пустой `files`, возвращается новый пустой объект покрытия.
+
+- Строка — один путь (файл или папка), трактуется как массив `files` из одного элемента
+- `files => \@paths` — массив путей (файлы и/или папки)
+- `{ files => \@paths }` — конфигурационный hashref (в `clip/remove/cleaning` сейчас поддерживается только ключ `files`)
+- В списке `files` также допускается `Code::CovTool::Sources` (используется его `src_dir` как путь к корню исходников)
+- В списке `files` также допускается `Path::Tiny` (используется строковое представление пути)
+- Корень исходников можно указывать строкой (например `.` или абсолютный путь до `src_dir`)
+
+Возвращает новый объект Code::CovTool.
+
+### clone
+
+    my $clone_obj = $f1->clone();
+
+Возвращает глубокую копию текущего экземпляра Code::CovTool. Аргументы не принимает.
+
+### excess
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $f1  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+    my $f2  = Code::CovTool->new( src => $src, file => 'data2.lcov' );
+
+    my $excess  = $f1->excess( $f2 );
+    my $excess2 = $f1 < $f2;
+
+Вычисляет разницу покрытия между двумя наборами данных.
+Возвращает новый объект Code::CovTool, содержащий только те строки и функции,
+которые покрыты во втором наборе, но не покрыты в первом.
+
+Оператор перегружен: можно использовать `$cov1 < $cov2`.
+
+- **$f2** (требуется)
+
+    Объект Code::CovTool для сравнения
+
+Возвращает новый объект Code::CovTool
+
+### export
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $f1  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+    my $f2  = Code::CovTool->new( src => $src, file => 'data2.lcov' );
+
+    my $merged = $f1->add( $f2 );
+    print $merged->export;
+
+Генерирует данные в формате, пригодном для обработки утилитами типа genhtml.
+
+Возвращает строку в формате lcov
+
+### get\_file\_list
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $cov  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+
+    my $files = $cov->get_file_list;
+
+Возвращает ссылку на массив путей к файлам присутствующих в данных покрытия.
+
+### get\_function\_info
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $search_name = 'getsubdfa';
+    my $cov  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+    my $info = $cov->get_function_info( $search_name );
+
+    print "Находится в файле $info->{$search_name}->[0]->{filename}\n";
+    print "Начиная со строки $info->{$search_name}->[0]->{start_line}\n";
+
+Возвращает информацию о конкретной функции.
+
+- **$search\_name** (требуется)
+
+    Имя функции для поиска (может быть как деманглированным, так и манглированным)
+
+Возвращает хэш с информацией о функции:
+ключ - имя функции,
+значение - массив хэшей с полями filename и start\_line
+
+### get\_function\_list
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $cov  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+
+    my $all_function_names = $cov->get_function_list();
+
+    my $path;
+    $path = 'src/backend/regex';
+    my $subtree_function_names = $cov->get_function_list( $path );
+    $path = 'src/backend/regex/regexec.c';
+    my $function_names_from_file = $cov->get_function_list( $path );
+
+Возвращает список функций, присутствующих в данных покрытия.
+
+- **$path** (опционально)
+
+    Путь к файлу или директории для фильтрации функций
+
+Возвращает ссылку на массив имен функций
+
+### get\_src\_dir
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $cov  = Code::CovTool->new( src => $src, file => 'data.lcov' );
+
+    my $source_tree_dir = $cov->get_src_dir;
+
+Возвращает директорию исходных кодов, связанную с объектом.
+
+Возвращает путь к директории исходных кодов
+
+### is\_empty
+
+    my $src = Code::CovTool::Sources->new( src_dir => '/tmp/src' );
+
+    my $cov = Code::CovTool->new( src => $src );
+
+    if ($cov->is_empty) {
+      print "Нет данных покрытия\n";
+    }
+
+Проверяет, содержит ли объект какие-либо данные покрытия.
+
+Возвращает истину, если данные отсутствуют, ложь в противном случае
+
+### rebase
+
+    my $old_src = Code::CovTool::Sources->new( src_dir => '/tmp/old_src'  );
+    my $new_src = Code::CovTool::Sources->new( src_dir => '/tmp/new_src'  );
+
+    my $old_cov = Code::CovTool->new( src => $old_src, file => 'data.lcov' );
+
+    my $new_cov = $old_cov->rebase( $new_src );
+
+Изменяет базовую директорию исходных кодов в данных покрытия, сохраняя относительные пути.
+
+- **$new\_src** (требуется)
+
+    Объект Code::CovTool::Sources с новой директорией исходных кодов
+
+Возвращает новый объект Code::CovTool с перебазированными данными
+
+### remove
+
+    $f1->remove( { files => ['src/backend/regex/regexec.c','src/backend/utils/adt/numeric.c'] }  );
+    $f1->remove( 'src/backend/regex/regexec.c' );
+    $f1->remove( 'src/backend/utils' );
+
+Удаляет покрытие для указанных файлов и папок; для всех остальных исходников покрытие остаётся неизменным.
+Метод изменяет покрытие в вызывающем экземпляре объекта (ничего не возвращает).
+
+Аргументы те же, что у ["clip"](#clip): строка, `files => \@paths` или `{ files => \@paths }`, с теми же проверками.
+
+&#x3d;сut
+
+### cleaning
+
+    $f1->cleaning( files => ['src/backend/regex/regexec.c','src/backend/utils/adt/numeric.c'] );
+    $f1->cleaning( 'src/backend/regex/regexec.c' );
+    $f1->cleaning( 'src/backend/utils' );
+
+Обнуляет покрытие для указанных файлов и папок; для всех остальных исходников покрытие остаётся неизменным.
+Метод изменяет покрытие в вызывающем экземпляре объекта (ничего не возвращает).
+
+Аргументы те же, что у ["clip"](#clip): строка, `files => \@paths` или `{ files => \@paths }`, с теми же проверками.
+
+---
+
+*Automatically generated from POD documentation*

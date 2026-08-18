@@ -1,0 +1,56 @@
+---
+abstract: 'Code::CovTool - Module for processing LCOV coverage data'
+author:
+  - unknown
+build_requires:
+  Test::Exception: '0'
+  Test::More: '0'
+configure_requires:
+  Module::Build: '0.42'
+dynamic_config: 0
+generated_by: 'Module::Build version 0.4232, CPAN::Meta::Converter version 2.150010'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: '1.4'
+name: Code-CovTool
+provides:
+  Code::CovTool:
+    file: lib/Code/CovTool.pm
+    version: v0.0.7
+  Code::CovTool::CoverageData:
+    file: lib/Code/CovTool/CoverageData.pm
+  Code::CovTool::PathFilter:
+    file: lib/Code/CovTool/PathFilter.pm
+  Code::CovTool::PathResolver:
+    file: lib/Code/CovTool/PathResolver.pm
+  Code::CovTool::Sources:
+    file: lib/Code/CovTool/Sources.pm
+  Code::CovTool::Tracefile:
+    file: lib/Code/CovTool/Tracefile.pm
+  CovEx::Analyzer:
+    file: lib/CovEx/Analyzer.pm
+  CovEx::Comparator:
+    file: lib/CovEx/Comparator.pm
+  CovEx::Config:
+    file: lib/CovEx/Config.pm
+  CovEx::FileGenerator:
+    file: lib/CovEx/FileGenerator.pm
+  CovEx::Report:
+    file: lib/CovEx/Report.pm
+  CovEx::TestProject:
+    file: lib/CovEx/TestProject.pm
+  CovEx::Utils:
+    file: lib/CovEx/Utils.pm
+  CovEx::VersionManager:
+    file: lib/CovEx/VersionManager.pm
+requires:
+  Capture::Tiny: '0'
+  DateTime: '0'
+  Moose: '0'
+  Path::Tiny: '0'
+  Pod::Markdown: '0'
+resources:
+  license: http://dev.perl.org/licenses/
+version: v0.0.7
+x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

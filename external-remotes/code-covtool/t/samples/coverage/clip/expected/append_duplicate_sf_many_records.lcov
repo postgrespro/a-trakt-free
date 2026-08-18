@@ -1,0 +1,15 @@
+SF:@PATH_TO_SOURCES@/src/core_functions.c
+DA:4,8
+DA:9,4
+DA:5,8
+DA:10,2
+DA:8,4
+FN:8,safe_divide
+FN:4,simple_math
+FNDA:8,simple_math
+FNDA:4,safe_divide
+FNF:2
+FNH:2
+LH:5
+LF:5
+end_of_record

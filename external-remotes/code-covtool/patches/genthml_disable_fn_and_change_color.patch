@@ -1,0 +1,99 @@
+--- /usr/bin/genhtml	2022-06-06 13:19:45.000000000 +0500
++++ mood_genhml	2025-05-26 21:04:06.915935532 +0500
+@@ -1138,6 +1138,10 @@
+ 		($lines_found, $lines_hit, $fn_found, $fn_hit, $br_found,
+ 		 $br_hit, $testdata, $testfncdata, $testbrdata) =
+ 			process_file($trunc_dir, $rel_dir, $filename);
++		$fn_found = 0;
++		$fn_hit = 0;
++		$testfncdata = {};
++
+ 
+ 		$base_name = basename($filename);
+ 
+@@ -3101,13 +3105,13 @@
+ 	td.headerCovTableEntryLo
+ 	{
+ 	  text-align: right;
+-	  color: #COLOR_00;
+ 	  font-family: sans-serif;
+ 	  font-weight: bold;
+ 	  white-space: nowrap;
+ 	  padding-left: 12px;
+ 	  padding-right: 4px;
+-	  background-color: #COLOR_10;
++	  color: var(--text-color, #COLOR_00);
++	  background-color: var(--bg-color, #COLOR_10);
+ 	}
+ 	
+ 	/* All views: header legend value for legend entry */
+@@ -3236,7 +3240,8 @@
+ 	  text-align: right;
+ 	  padding-left: 10px;
+ 	  padding-right: 10px;
+-	  background-color: #COLOR_10;
++	  color: var(--text-color, #COLOR_00);
++	  background-color: var(--bg-color, #COLOR_10);
+ 	  font-weight: bold;
+ 	  font-family: sans-serif;
+ 	}
+@@ -3248,7 +3253,8 @@
+ 	  text-align: right;
+ 	  padding-left: 10px;
+ 	  padding-right: 10px;
+-	  background-color: #COLOR_10;
++	  color: var(--text-color, #COLOR_00);
++	  background-color: var(--bg-color, #COLOR_10);
+ 	  white-space: nowrap;
+ 	  font-family: sans-serif;
+ 	}
+@@ -3520,12 +3526,12 @@
+ 			'COLOR_04' => "a7fc9d",
+ 			'COLOR_05' => "b5f7af",
+ 			'COLOR_06' => "b8d0ff",
+-			'COLOR_07' => "cad7fe",
++			'COLOR_07' => '008000',
+ 			'COLOR_08' => "dae7fe",
+ 			'COLOR_09' => "efe383",
+ 			'COLOR_10' => "ff0000",
+ 			'COLOR_11' => "ff0040",
+-			'COLOR_12' => "ff6230",
++			'COLOR_12' => 'bbbbbb',
+ 			'COLOR_13' => "ffea20",
+ 			'COLOR_14' => "ffffff",
+ 			'COLOR_15' => "284fa8",
+@@ -6011,6 +6017,34 @@
+ 
+ </body>
+ </html>
++<script>
++function applyStyles(elements, condition) {
++  elements.forEach(el => {
++    const isZero = condition(el.textContent);
++    el.style.setProperty('--text-color', '#000000');
++    el.style.setProperty('--bg-color', isZero ? '#bbbbbb' : '#008000');
++  });
++}
++
++function isZeroText(text) {
++  return text.trim() === '0';
++}
++
++function isZeroValue(text) {
++  const numericValue = parseFloat(text.replace(/[^\\d.-]/g, ''));
++  return numericValue === 0;
++}
++
++function isFirstPartZero(text) {
++  const parts = text.split('/').map(part => parseFloat(part.trim()));
++  return parts[0] === 0;
++}
++
++// Применяем стили одним проходом
++applyStyles(document.querySelectorAll('.headerCovTableEntryLo'), isZeroText);
++applyStyles(document.querySelectorAll('.coverPerLo'), isZeroValue);
++applyStyles(document.querySelectorAll('.coverNumLo'), isFirstPartZero);
++</script>
+ END_OF_HTML
+ 		;
+ 	}

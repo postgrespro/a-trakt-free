@@ -1,0 +1,1 @@
+void fa(void) {}

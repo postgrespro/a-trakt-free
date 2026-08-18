@@ -1,0 +1,28 @@
+t/samples/
+├── src/
+│   ├── core_functions.c           # Базовые функции
+│   ├── advanced_coverage.c        # Циклы и условные операции
+│   └── special_cases.c            # Сложные ветвления & checksum
+├── include/
+│   └── sample_functions.h
+├── scripts/
+│   └── generate_coverage.pl       # Для генерации покрытия
+├── coverage/
+│   ├── full.PL                    # Полное покрытие
+│   ├── simple.PL                  # Частичное покрытие
+|   ├── checksum_conflict.PL       # Покрытие с конфликтом checksum
+|   └── checksum_original.PL       # Покрытие с checksum, без конфликта
+└── Makefile
+
+### Обновление покрытия
+Чтобы обновить покрытие при внесении изменений
+в исходники в папке src/ необходимо сделать:
+make coverage
+Скрипт generate_coverage.pl создаст *.PL файлы в папке coverage.
+
+### Очистка после сборки покрытия
+make clean
+
+Файлы из coverage в свою очередь используются в тестах.
+В файлах *.PL значение SF идет с шаблоном @PATH_TO_SOURCES@
+шаблон заменяется через ENV на необходимый путь.
