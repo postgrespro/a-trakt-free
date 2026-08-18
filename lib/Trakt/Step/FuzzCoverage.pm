@@ -80,6 +80,7 @@ around 'core_run' => sub {
   my $samples_dir = $res_dir->child('samples')->absolute;
 
   my $cache_dir = $self->cache_dir;
+  my $exch_dir = $self->exchange_dir;
   my $profile_dir = $cache_dir->child("raw_profile");
 
   $self->run_command("prepare", "mkdir -p $profile_dir");
@@ -92,15 +93,16 @@ around 'core_run' => sub {
   $self->run_command('process_samples',"for file in $samples_dir/* ; do echo Processing \$file... && $prepare_context_command && $command ; done ; true"); # true чтобы $? всегда был по окончанию 0 и мы не прерывались по неуспешности запуска
 
   my $llvm = $trakt->intendant->llvm;
+  my $lcov_file = $exch_dir->child('profdata.lcov');
 
 # А это появится только в 13м clang'е
 #  my $compilation_dir = $self->trakt->step('build')->target('coverage')->cache_dir->child('build_dir/repos/postgrespro');
 
   $self->run_command('generate_coverage', $llvm->binary('llvm-profdata')." merge -output=$cache_dir/profdata $profile_dir/*.profraw");
-  $self->run_command('generate_coverage', $llvm->binary('llvm-cov'). " export ${binaries} -instr-profile=${cache_dir}/profdata -format=lcov > ${cache_dir}/profdata.lcov");
-#  $self->run_command('generate_coverage',"$llvm->binary('llvm-cov'). " export ${binaries} -instr-profile=${cache_dir}/profdata -format=lcov -compilation-dir=$compilation_dir > ${cache_dir}/profdata.lcov");
-  $self->exec_bin('generate_coverage', 'fix-lcov.pl', "${cache_dir}/profdata.lcov");
-  $self->run_command('generate_coverage',"genhtml -o ${cache_dir}/$target_name.html ${cache_dir}/profdata.lcov");
+  $self->run_command('generate_coverage', $llvm->binary('llvm-cov'). " export ${binaries} -instr-profile=${cache_dir}/profdata -format=lcov > $lcov_file");
+#  $self->run_command('generate_coverage',"$llvm->binary('llvm-cov'). " export ${binaries} -instr-profile=${cache_dir}/profdata -format=lcov -compilation-dir=$compilation_dir > $lcov_file);
+  $self->exec_bin('generate_coverage', 'fix-lcov.pl', "$lcov_file");
+  $self->run_command('generate_coverage',"genhtml -o ${cache_dir}/$target_name.html $lcov_file");
   $self->run_command('generate_coverage',"cd ${cache_dir}; tar -cvzf $target_name.coverage.html.tgz $target_name.html");
 
 
