@@ -549,6 +549,29 @@ subtest 'src_dir объект должен быть Path::Tiny' => sub {
 =head1 GROUP: Инициализация объектов
 =head1 SUBGROUP: Code::CovTool::Sources
 =head1 TYPE: Позитивные
+=head1 TEST: абсолютные SF-пути принимаются при src_dir='/'
+=cut
+subtest "абсолютные SF-пути принимаются при src_dir='/'" => sub {
+    use Local::Test::Helper;
+
+    my $samples_dir = Local::Test::Helper::prepare_samples_dir(
+      path_mapping => { '@PATH_TO_SOURCES@' => '@TEMP_SAMPLES_DIR@' },
+    );
+
+    my $src_root = Code::CovTool::Sources->new( src_dir => '/' );
+
+    lives_ok {
+      my $cov = Code::CovTool->new(
+        src  => $src_root,
+        file => "$samples_dir/simple.lcov",
+      );
+      ok( !$cov->is_empty, 'parsed coverage is not empty' );
+    };
+};
+
+=head1 GROUP: Инициализация объектов
+=head1 SUBGROUP: Code::CovTool::Sources
+=head1 TYPE: Позитивные
 =head1 TEST: успешная инициализация с src_dir в конструкторе
 =cut
 subtest 'успешная инициализация с src_dir в конструкторе' => sub {

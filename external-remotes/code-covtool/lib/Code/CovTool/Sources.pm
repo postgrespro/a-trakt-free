@@ -218,18 +218,18 @@ sub _get_absolute_path {
 sub _is_path_inside {
   my ( $self, $path ) = @_;
 
-  my $dir = $self->src_dir;
+  my $dir = abs_path( $self->src_dir ) || $self->src_dir;
+  $dir  = File::Spec->canonpath( $dir );
 
-  # Нормализуем пути
   $path = abs_path( $path ) || $path;
-  $dir = abs_path( $dir ) || $dir;
-
-  # Приводим пути к одинаковому формату
   $path = File::Spec->canonpath( $path );
-  $dir = File::Spec->canonpath( $dir );
 
-  # Проверяем что путь начинается с директории
-  return index( $path, "$dir/" ) == 0;
+  my $rel = File::Spec->abs2rel( $path, $dir );
+
+  return 0 if File::Spec->file_name_is_absolute( $rel );
+  return 0 if $rel =~ /^\.\.(?:\/|$)/;
+
+  return 1;
 }
 
 sub get_file_list {

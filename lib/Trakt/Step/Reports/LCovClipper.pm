@@ -5,7 +5,6 @@ use strict;
 use Moose::Role;
 use Path::Tiny;
 
-# Метод augment вызывается из родительского метода при помощи вызова inner()
 around 'after_run' => sub
 {
   my $orig = shift;
