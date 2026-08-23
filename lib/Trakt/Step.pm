@@ -174,10 +174,9 @@ sub run
 
   $self->before_run();
 
-  foreach my $target_name (@targets)
-  {
-    $self->target($target_name)->run();
-  }
+
+  $self->core_run();
+
 
   # Вызов inner() позволяет для метода run класса step использовать модификатор
   # augment (дополнение) в потомках класса step. Это позволит расширять функциональность
@@ -203,6 +202,18 @@ sub run
 sub before_run
 {
 }
+
+# По умолчанию просто запускаем все цели данного шага
+sub core_run
+{
+  my $self = shift;
+  my @targets = $self->targets;
+  foreach my $target_name (@targets)
+  {
+    $self->target($target_name)->run();
+  }
+}
+
 
 # Если хочется запустить что-то после того как завершился запуск целей, переопределите этот метод
 sub after_run
