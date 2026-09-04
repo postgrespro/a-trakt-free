@@ -2,6 +2,8 @@ package SDL::Stapel::Flavour::Coverage;
 
 use Moose::Role;
 
+# FIXME -- depricated. Испольсуйте ClangCoverage
+
 around "configure_env" => sub
 {
   my $orig = shift;

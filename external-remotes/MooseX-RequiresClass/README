@@ -1,0 +1,27 @@
+MooseX-RequiresClass
+
+A Moose role using MooseX::RequiresClass can require that any class consuming it
+inherits from a given base class:
+
+    package My::Role;
+    use Moose::Role;
+    use MooseX::RequiresClass;
+    requires_class 'My::Base';
+
+Consuming a class that does not inherit from My::Base fails at composition time.
+See the module's POD for details, the opt-out flag, and CAVEATS.
+
+INSTALLATION
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+DEPENDENCIES
+
+    Moose (2.0000+)
+
+LICENSE
+
+Same terms as Perl 5 itself.

@@ -148,7 +148,6 @@ sub project_version_major
 
   return 14 if $branch eq 'shardman';
   return 14 if $branch eq 'shardman-dev';
-  return 16 if $branch eq 'master';
 
   if ($branch =~/^REL_(\d\d)/)
   {

@@ -1,0 +1,12 @@
+Changes
+MANIFEST
+Makefile.PL
+README
+lib/MooseX/RequiresClass.pm
+t/00-load.t
+t/10-basic.t
+t/20-composition.t
+t/30-triggers.t
+t/40-opt-out.t
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

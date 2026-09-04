@@ -18,7 +18,10 @@ coerce 'Path::Tiny'
   => from 'Str',
   => via {path($_)->absolute};
 
-has release_spec => (is => 'rw', isa => 'SDL::Stapel::ReleaseSpec');
+has release_spec_class => (is => 'ro', default => 'SDL::Stapel::ReleaseSpec');
+has release_spec => (is => 'rw', lazy => 1, isa => 'SDL::Stapel::ReleaseSpec', default => sub {my $self = shift; return $self->release_spec_class->new(helling => $self->helling, %{$self->_release_spec_init_args})});
+has '_release_spec_init_args' => (is => 'ro', isa => 'HashRef', default => sub{return {}});
+
 has src_origin_class => (is => 'ro', default => 'SDL::Stapel::SrcOrigin::Git');
 has src_origin => (is=>'ro', lazy => 1, default => sub {my $self = shift; return $self->src_origin_class->new(helling => $self->helling, %{$self->_src_origin_init_args})});
 has '_src_origin_init_args' => (is => 'ro', isa => 'HashRef');
@@ -48,6 +51,9 @@ has 'helling' => (is => 'rw', isa => 'SDL::Helling', required => 1, weak_ref => 
 # При in source сборке он оказывается в директории build
 sub configure_dir
 {
+  # FIXME есть мысль что это не достаточн универсально
+  # а в системах сборки отличной от autoconf явного cofigure скрипта вообще нету
+
   my $self = shift;
 
   return $self->build_dir if $self->is_insource_build;

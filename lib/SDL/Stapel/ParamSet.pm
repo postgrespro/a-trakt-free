@@ -5,6 +5,9 @@ use Moose;
 has options => (is => 'rw', builder => 'options_defaults');
 has environment  => (is => 'rw', builder => 'environment_defaults');
 
+# FIXME Кажется это тупиковая ветвь эволюции стапелестроения.
+# Следует внимательно изучть этот впрос и удалить этот модуль
+
 sub options_defaults
 {
   return {};

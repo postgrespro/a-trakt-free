@@ -1,0 +1,1 @@
+../../external-remotes/MooseX-RequiresClass/lib/MooseX/RequiresClass.pm

@@ -17,6 +17,7 @@ with "Trakt::Step::Build::SelfReportTarget";
 
 use SDL::Helling;
 use SDL::Stapel::AFLpp::ReleaseSpec;
+use SDL::Ranges; # FIXME Не уверен что он должен вот настолько глобально использоваться
 
 has version_prefixes => (is => 'rw',
                          isa  => 'ArrayRef[Str]',
@@ -41,8 +42,9 @@ sub scrutiny_roles
 sub scrutiny_code_dirs
 {
   my $self = shift;
-  #  my @code_dirs = ($self->trakt->conf_dir->child('src/code')->absolute);
-  #  return @code_dirs;
+  # По умолчанию берем директорию src/code из тракта. Если надо по-другому, переопределитье
+  my @code_dirs = ($self->trakt->conf_dir->child('src/code')->absolute);
+  return @code_dirs;
 }
 
 # Патчи которые должны быть наложены на код перед сборкой
@@ -126,6 +128,7 @@ sub build_flavours
   #  };
   #  die "Неизвестная сборка: '$build_name'" unless $flavours->{$build_name};
   #  return @{$flavours->{$build_name}};
+  return ();
 }
 
 #### А это уже методы класса которые универсально используют все то что настроенно выше

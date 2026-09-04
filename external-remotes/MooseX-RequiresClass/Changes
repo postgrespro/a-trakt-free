@@ -1,0 +1,10 @@
+Revision history for MooseX-RequiresClass
+
+0.05      2026-09-01
+          - Initial release.
+          - requires_class sugar: a role can require that its consumer
+            inherits from one or more given base classes.
+          - Enforcement at role composition (compile-time). Covers single
+            consumption (with 'Role'), combined (with 'A','B'), nested
+            (role-in-role), and runtime role application to a class or object.
+          - Per-class opt-out via:  with 'Role' => { -no_baseclass_checks => 1 }
