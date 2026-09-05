@@ -144,7 +144,7 @@ sub project_version_major
   my $self = shift;
   my $trakt = $self->trakt;
 
-  my $branch = $trakt->conf->{branch};
+  my $branch = $trakt->branch;
 
   return 14 if $branch eq 'shardman';
   return 14 if $branch eq 'shardman-dev';
@@ -168,7 +168,7 @@ sub project_version_product
   my $self = shift;
   my $trakt = $self->trakt;
 
-  my $branch = $trakt->conf->{branch};
+  my $branch = $trakt->branch;
 
   return 'shardman' if $branch eq 'shardman';
   return 'shardman' if $branch eq 'shardman-dev';

@@ -39,10 +39,10 @@ sub new
   $self->{steps_list} = $steps_list;
   $self->{steps} = $steps_new;
 
-  if (defined $opt{branch})
-  {
-    $self->{branch} = $opt{branch};
-  }
+#  if (defined $opt{branch})
+#  {
+#    $self->{branch} = $opt{branch};
+#  }
   $self->{trakt} = $trakt;
 #  if ($cert_conf)
 #  {

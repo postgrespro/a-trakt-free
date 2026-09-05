@@ -58,7 +58,7 @@ around 'core_run' => sub {
   }
   die "Certification '$cert_name' is not registered in sample storage. Create it and try again" unless $found;
 
-  my $count = Samples::upsert_samples(conf => $storage_conf, cert => $cert_name, trakt => $trakt_name, target=> $self->name, branch=> $self->trakt->conf->{branch}, samples => \@sample_names);
+  my $count = Samples::upsert_samples(conf => $storage_conf, cert => $cert_name, trakt => $trakt_name, target=> $self->name, branch=> $self->trakt->branch, samples => \@sample_names);
 
   return ($self->$orig(@args));
 };

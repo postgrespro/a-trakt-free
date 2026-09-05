@@ -36,7 +36,7 @@ around 'core_run' => sub {
   $self->run_command("cleanup", "rm -rf ".$self->exchange_dir);
   $self->exchange_dir->mkpath;
 
-  my $branch_name =  $self->trakt->conf->{branch};
+  my $branch_name =  $self->trakt->branch;
 
   print "Looking for previous '$target_name' samples for '$branch_name' branch\n";
   my $res = Samples::get_samples(conf => $conf, trakt => $trakt_name, target=> $target_name, path => $self->exchange_dir, branch => $branch_name, current_cert => $cert_conf->{name});

@@ -99,7 +99,7 @@ sub base_dir
   my $new_value = shift;
 
   $self->{_base_dir} = $new_value if defined $new_value;
-  $self->{_base_dir} //= $self->work_dir->child($self->full_name . "." . $self->conf->{branch});
+  $self->{_base_dir} //= $self->work_dir->child($self->full_name . "." . $self->branch);
 
   return path($self->{_base_dir});
 }

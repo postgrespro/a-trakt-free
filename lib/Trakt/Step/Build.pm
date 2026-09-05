@@ -98,7 +98,7 @@ sub get_patches
         push @patches, $file;
         next;
       }
-      my $branch = $self->trakt->conf->{branch}; # FIXME пока так, а потом надо систему учета версий как-то переписать...
+      my $branch = $self->trakt->branch; # FIXME пока так, а потом надо систему учета версий как-то переписать...
       my $version = $self->trakt->convoy->project_version_major;
       $branch =~ s/_STABLE$//; # REL_16_STABLE -> REL_16 FIXME
       if ($ranger->match($secondary_suffix, $version, $branch) )
