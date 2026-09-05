@@ -30,8 +30,8 @@ around 'core_run' => sub {
   my $step_name = $self->step->name;
 
   my $conf = $self->step->conf;
-  my $cert_conf = $self->trakt->conf->{cert} || {};
-
+  my $cert_conf = $self->trakt->conf2->cert;
+  die "Cert conf have not been loaded, did you forgot to specify 'cert_conf' while trakt init?" if ref $cert_conf ne 'HASH';
 
   $self->run_command("cleanup", "rm -rf ".$self->exchange_dir);
   $self->exchange_dir->mkpath;

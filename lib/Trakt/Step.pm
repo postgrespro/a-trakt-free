@@ -97,7 +97,7 @@ sub conf
       ref $forced_conf->{$self->name}->{$name} eq 'HASH')
   {
     $config = $forced_conf->{$self->name}->{$name};
-    # FIXME добавить сюда debig-вывод о том, что мы используем принудительный конфиг
+    # FIXME добавить сюда debug-вывод о том, что мы используем принудительный конфиг
   } else
   {
     $config = decode_json(path($config_file)->slurp);

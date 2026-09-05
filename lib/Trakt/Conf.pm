@@ -10,7 +10,7 @@ sub new
   my $class = shift;
   my %opt = @_;
   my $trakt = $opt{trakt};
-  my $cert_conf = $opt{cert_conf};
+  #  my $cert_conf = $opt{cert_conf};
   my $trakt_name = $opt{trakt_name} || $trakt->name;
   my $conf_dir = Trakt::Conf->conf_dir(%opt);
 
@@ -44,10 +44,10 @@ sub new
     $self->{branch} = $opt{branch};
   }
   $self->{trakt} = $trakt;
-  if ($cert_conf)
-  {
-    $self->{cert} = $json->decode(path($cert_conf)->slurp);
-  }
+#  if ($cert_conf)
+#  {
+#    $self->{cert} = $json->decode(path($cert_conf)->slurp);
+#  }
 
   bless $self, $class;
   return $self;

@@ -17,7 +17,7 @@ before 'after_run' => sub
   open(HF, '>', $summary_file) or die $!;
   print(HF "Название исследования: ", $self->trakt->full_name, "\n");
   print(HF "Имя ветки: ", $self->trakt->branch, "\n");
-  my %config = %{$self->trakt->conf->{cert}};
+  my %config = %{$self->trakt->conf2->cert};
   print(HF "Имя сертификации: $config{name}\n");
 
   foreach my $target_name (@targets)

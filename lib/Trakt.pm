@@ -2,6 +2,7 @@ package Trakt;
 
 use strict;
 use Trakt::Conf;
+use Trakt::Conf2;
 use Trakt::Step;
 use Trakt::Intendant;
 use Trakt::Sklad;
@@ -18,8 +19,10 @@ with 'Trakt::Conf2Role', 'Trakt::CommandExecutorRole';
 has 'name' =>   (is => 'ro', required => 1);
 has 'trakt_path' => (is => 'rw');
 has 'branch' =>   (is => 'rw');
-has 'cert_conf' => (is => 'rw');
+#has 'cert_conf' => (is => 'rw');
 has 'features' => (isa =>"ArrayRef[Str]", is => 'ro', default => sub{[]});
+
+has 'conf2' => (is => 'rw', isa => 'Trakt::Conf2');
 
 
 has 'convoy' => (is => 'rw', isa => 'Trakt::Convoy');
@@ -59,7 +62,7 @@ sub trakt
 sub conf
 {
   my $self = shift;
-  $self->{_conf} ||= Trakt::Conf->new(trakt => $self, cert_conf => $self->cert_conf, branch => $self->branch, trakt_name => $self->name, trakt_path => $self->trakt_path); # FIXME сделать как-то более объектно ориентированно.
+  $self->{_conf} ||= Trakt::Conf->new(trakt => $self, branch => $self->branch, trakt_name => $self->name, trakt_path => $self->trakt_path); # FIXME сделать как-то более объектно ориентированно.
   return $self->{_conf};
 }
 
@@ -280,6 +283,8 @@ sub BUILDARGS
   my $class = shift;
   my $args = @_==1 ? $_[0] : {@_};  # Берем параметры и из ссылки на хеш и из хеша
 
+  $args->{conf2} = Trakt::Conf2->new(cert_conf => $args->{cert_conf});
+
   if ($args->{tarball})
   {
     my $release_spec = undef;
@@ -320,6 +325,9 @@ sub BUILDARGS
 sub BUILD
 {
   my $self = shift;
+
+  $self->conf2->trakt($self);
+
   my $convoy_class = $self->conf->{convoy_class};
   my $intendant_class = $self->conf->{intendant_class};
 
