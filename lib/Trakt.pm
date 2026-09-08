@@ -6,6 +6,8 @@ use Trakt::Conf2;
 use Trakt::Step;
 use Trakt::Intendant;
 use Trakt::Sklad;
+use Trakt::Cert;
+
 use Path::Tiny;
 use FindBin;
 use Module::Load;
@@ -23,6 +25,7 @@ has 'branch' =>   (is => 'rw');
 has 'features' => (isa =>"ArrayRef[Str]", is => 'ro', default => sub{[]});
 
 has 'conf2' => (is => 'rw', isa => 'Trakt::Conf2');
+has 'cert' => (is => 'rw', isa => 'Trakt::Cert');
 
 
 has 'convoy' => (is => 'rw', isa => 'Trakt::Convoy');
@@ -284,6 +287,7 @@ sub BUILDARGS
   my $args = @_==1 ? $_[0] : {@_};  # Берем параметры и из ссылки на хеш и из хеша
 
   $args->{conf2} = Trakt::Conf2->new(cert_conf => $args->{cert_conf});
+  $args->{cert} = Trakt::Cert->new(conf_file => $args->{cert_conf});
 
   if ($args->{tarball})
   {

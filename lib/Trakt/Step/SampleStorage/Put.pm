@@ -34,7 +34,7 @@ around 'core_run' => sub {
 
   my @sample_names = $sample_dir->children;
 
-  my $cert_conf = $self->trakt->conf2->cert;
+  my $cert_conf = $self->trakt->cert->conf;
   die "Cert conf have not been loaded, did you forgot to specify 'cert_conf' while trakt init?" if ref $cert_conf ne 'HASH';
 
   if ($cert_conf->{is_test})
