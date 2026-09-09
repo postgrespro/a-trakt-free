@@ -8,27 +8,24 @@ use Moose::Role;
 use JSON;
 use Path::Tiny;
 
-has "conf2" =>(is =>'rw', lazy => 1, builder => '_read_trakt_conf');
-#has "_cert_conf_file" => (is => 'rw', isa => 'Path::Tiny');
+has "conf2" =>(is =>'rw', lazy => 1, builder => '_conf_lazy');
 
-
-around BUILDARGS => sub {
-    my ($orig, $class, @args) = @_;
-    my $res = $class->$orig(@args);
-
-    #    $res->{_cert_conf_file} = path($res->{cert_conf}) if $res->{cert_conf};
-
-    #    # delete $res->{cert_conf}; # FIXME потом зачищать чтобы не мешался
-
-    return $res;
-};
-
-sub _read_trakt_conf
+sub _conf_lazy
 {
   my $self = shift;
   my $conf_dir = $self->conf_dir;
 
   my $trakt_conf_file = $conf_dir->child("trakt.conf");
+
+  my $res = $self->_read_trakt_conf($trakt_conf_file);
+
+  return $res;
+}
+
+sub _read_trakt_conf
+{
+  my $self = shift;  # может вызываться из метода класса, поэтому использовать нельзя
+  my $trakt_conf_file = shift;
 
   my $json = JSON->new->relaxed;
 
@@ -56,12 +53,17 @@ sub conf_dir
   my $self = shift;
   my %opt = @_;
 
-  my $trakt_name;
-  my $trakt_path;
+  return $self->_conf_dir($self->name, $self->trakt_path);
 
-  # Может вызыаться в двух вариантах, как метод объекта, и как метод класса. Во втором случае $self -- имя красса.
-  $trakt_name = $self->name;
-  $trakt_path = path($self->trakt_path || '.');
+}
+
+sub _conf_dir
+{
+  my $self = shift; # Метод может использоваться как метод класса, поэтому использовать нельзя
+  my $trakt_name = shift;
+  my $trakt_path = shift;
+
+  $trakt_path = path($trakt_path || '.');
 
   # Относительный путь считается от местоположения запускаемой программы
   if ($trakt_path->is_relative)
@@ -71,7 +73,23 @@ sub conf_dir
   return $trakt_path->child($trakt_name)->absolute;
 }
 
+# Это метод класса. Нужен для того чтобы подглядеть в конфиг до того как экземпляр класса создан
+# Это нужно потому что конфиг может запросить создание тракта используя кастомный класс наследника.
+# И мы должн будем узнать имя этого класса до создания экземпляра
+sub peek_conf
+{
+  my $class = shift;
+  my %opt = @_;
 
+  my $trakt_name = $opt{name};
+  my $trakt_path = $opt{trakt_path};
 
+  my $conf_dir = _conf_dir(undef, $trakt_name, $trakt_path);
+  my $trakt_conf_file = $conf_dir->child("trakt.conf");
+
+  my $res = _read_trakt_conf(undef, $trakt_conf_file);
+
+  return $res;
+}
 
 1;

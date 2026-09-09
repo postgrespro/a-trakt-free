@@ -1,8 +1,6 @@
 package Trakt;
 
 use strict;
-use Trakt::Conf;
-use Trakt::Conf2;
 use Trakt::Step;
 use Trakt::Intendant;
 use Trakt::Sklad;
@@ -245,9 +243,7 @@ sub create
   my %opt = @_;
   my $trakt_name = $opt{name};
 
-  my $conf = Trakt::Conf->new(trakt_name => $trakt_name, trakt_path => $opt{trakt_path});
-
-  my $class_name = $conf->{trakt_class};
+  my $class_name = Trakt::Conf2->peek_conf(%opt)->{trakt_class};
 
   if(! defined $class_name)
   {
@@ -324,6 +320,14 @@ sub BUILD
   my $convoy_class = $self->conf2->{convoy_class};
   my $intendant_class = $self->conf2->{intendant_class};
 
+  # Подключаем директорию lib из директории исследоования, если она есть
+  if (-d $self->conf_dir."/lib")
+  {
+    push @INC, $self->conf_dir."/lib";
+  }
+
+  # FIXME наверное подгрузку можулей надо вынести в общий хелпер какой-то
+  # Мы их еще для каждого шага подгружаем где-то
   if (defined $convoy_class)
   {
     if (! moudule_is_loaded($convoy_class))
