@@ -24,20 +24,20 @@ sub new
   {
     push @INC, $conf_dir."/lib";
   }
-  # В конфиге список шагов -- массив хешей. Чтобы оно сохряняло порядок
-  # тут мы разделяем: массив для порядку, хеш, для соответсвия имени шага имени модуля...
-
-  my $steps_old = $self->{steps};
-  my $steps_new = {};
-  my $steps_list = [];
-  foreach my $el (@$steps_old)
-  {
-    my ($name) = keys %$el;  # имя первого попавшегося элемента хеша. Там должна быть одна пара.
-    push @$steps_list, $name;
-    $steps_new->{$name} = $el->{$name};
-  }
-  $self->{steps_list} = $steps_list;
-  $self->{steps} = $steps_new;
+#  # В конфиге список шагов -- массив хешей. Чтобы оно сохряняло порядок
+#  # тут мы разделяем: массив для порядку, хеш, для соответсвия имени шага имени модуля...
+#
+#  my $steps_old = $self->{steps};
+#  my $steps_new = {};
+#  my $steps_list = [];
+#  foreach my $el (@$steps_old)
+#  {
+#    my ($name) = keys %$el;  # имя первого попавшегося элемента хеша. Там должна быть одна пара.
+#    push @$steps_list, $name;
+#    $steps_new->{$name} = $el->{$name};
+#  }
+#  $self->{steps_list} = $steps_list;
+#  $self->{steps} = $steps_new;
 
 #  if (defined $opt{branch})
 #  {

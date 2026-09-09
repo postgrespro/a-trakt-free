@@ -165,7 +165,7 @@ END_CONF
 
   $self->report_file($sydrfuzz_conf_file);
 
-  my $sydr_dir = path($self->trakt->conf->{sydr});
+  my $sydr_dir = path($self->trakt->conf2->{sydr});
   $sydr_dir = $sydr_dir->absolute($self->trakt->top_dir) if $sydr_dir->is_relative;
   die "Sydr dir '$sydr_dir' is not found" unless $sydr_dir->is_dir();
 

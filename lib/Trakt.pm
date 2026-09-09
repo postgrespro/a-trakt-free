@@ -16,7 +16,7 @@ use SDL::Stapel::Postgres::ReleaseSpec;
 
 use Moose;
 
-with 'Trakt::Conf2Role', 'Trakt::CommandExecutorRole';
+with 'Trakt::Conf2', 'Trakt::Conf2Role', 'Trakt::CommandExecutorRole';
 
 has 'name' =>   (is => 'ro', required => 1);
 has 'trakt_path' => (is => 'rw');
@@ -24,9 +24,7 @@ has 'branch' =>   (is => 'rw');
 #has 'cert_conf' => (is => 'rw');
 has 'features' => (isa =>"ArrayRef[Str]", is => 'ro', default => sub{[]});
 
-has 'conf2' => (is => 'rw', isa => 'Trakt::Conf2');
 has 'cert' => (is => 'rw', isa => 'Trakt::Cert');
-
 
 has 'convoy' => (is => 'rw', isa => 'Trakt::Convoy');
 has 'intendant' => (is => 'rw', isa => 'Trakt::Intendant', default=> sub{my $self = shift; Trakt::Intendant->new(trakt=>$self)});
@@ -69,16 +67,10 @@ sub conf
   return $self->{_conf};
 }
 
-sub conf_dir
-{
-  my $self = shift;
-  return $self->{_conf}->conf_dir;
-}
-
 sub steps
 {
   my $self = shift;
-  return @{$self->conf->{steps_list}};
+  return @{$self->conf2->{steps_list}};
 }
 
 sub full_name
@@ -152,7 +144,7 @@ sub step
 
   unless (defined  $self->{_steps}->{$name})
   {
-    my $class_name = $self->conf->{steps}->{$name};
+    my $class_name = $self->conf2->{steps}->{$name};
     die "Step class name is not defined for step '$name'" unless defined $class_name;
     load $class_name;
     $self->{_steps}->{$name} = $class_name->create(parent => $self, name => $name);
@@ -214,7 +206,7 @@ sub targets
   my $self = shift;
 
   my $forced_conf = $self->forced_conf;
-  my @res = @{$self->conf->{targets}} if $self->conf->{targets};
+  my @res = @{$self->conf2->{targets}} if $self->conf2->{targets};
 
   if (!@res)
   {
@@ -286,7 +278,6 @@ sub BUILDARGS
   my $class = shift;
   my $args = @_==1 ? $_[0] : {@_};  # Берем параметры и из ссылки на хеш и из хеша
 
-  $args->{conf2} = Trakt::Conf2->new(cert_conf => $args->{cert_conf});
   $args->{cert} = Trakt::Cert->new(conf_file => $args->{cert_conf});
 
   if ($args->{tarball})
@@ -330,10 +321,8 @@ sub BUILD
 {
   my $self = shift;
 
-  $self->conf2->trakt($self);
-
-  my $convoy_class = $self->conf->{convoy_class};
-  my $intendant_class = $self->conf->{intendant_class};
+  my $convoy_class = $self->conf2->{convoy_class};
+  my $intendant_class = $self->conf2->{intendant_class};
 
   if (defined $convoy_class)
   {
@@ -354,7 +343,7 @@ sub BUILD
   }
 
 
-  my $features_available = $self->conf->{features_available};
+  my $features_available = $self->conf2->{features_available};
   $features_available = {map {$_ => 1} @$features_available};
 
   my $is_ok = 1;

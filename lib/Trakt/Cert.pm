@@ -12,15 +12,16 @@ use Path::Tiny;
 has "conf" =>(is =>'rw', lazy => 1, builder => '_read_conf');
 has "conf_file" => (is => 'rw');
 
-has "name" =>(is => 'ro', lazy => 1, default => sub {shift->conf->{name}});
-has "is_test" =>(is => 'ro', lazy => 1, default => sub {shift->conf->{is_test}});
+has "name" =>(is => 'ro', lazy => 1, default => sub {shift->conf2->{name}});
+has "is_test" =>(is => 'ro', lazy => 1, default => sub {shift->conf2->{is_test}});
 
 sub _read_conf
 {
   my $self = shift;
   my $json = JSON->new->relaxed;
   my $file = path($self->conf_file); # FIXME переделать через coerse
-  my $res =  $json->decode($file->slurp);
+
+  my $res = $json->decode($file->slurp);
 
   return $res;
 }
