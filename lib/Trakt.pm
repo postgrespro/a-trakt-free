@@ -14,7 +14,7 @@ use SDL::Stapel::Postgres::ReleaseSpec;
 
 use Moose;
 
-with 'Trakt::Conf2','Trakt::CommandExecutorRole';
+with 'Trakt::Conf','Trakt::CommandExecutorRole';
 
 has 'name' =>   (is => 'ro', required => 1);
 has 'trakt_path' => (is => 'rw');
@@ -68,7 +68,7 @@ sub conf
 sub steps
 {
   my $self = shift;
-  return @{$self->conf2->{steps_list}};
+  return @{$self->conf->{steps_list}};
 }
 
 sub full_name
@@ -142,7 +142,7 @@ sub step
 
   unless (defined  $self->{_steps}->{$name})
   {
-    my $class_name = $self->conf2->{steps}->{$name};
+    my $class_name = $self->conf->{steps}->{$name};
     die "Step class name is not defined for step '$name'" unless defined $class_name;
     load $class_name;
     $self->{_steps}->{$name} = $class_name->create(parent => $self, name => $name);
@@ -204,7 +204,7 @@ sub targets
   my $self = shift;
 
   my $forced_conf = $self->forced_conf;
-  my @res = @{$self->conf2->{targets}} if $self->conf2->{targets};
+  my @res = @{$self->conf->{targets}} if $self->conf->{targets};
 
   if (!@res)
   {
@@ -243,7 +243,7 @@ sub create
   my %opt = @_;
   my $trakt_name = $opt{name};
 
-  my $class_name = Trakt::Conf2->peek_conf(%opt)->{trakt_class};
+  my $class_name = Trakt::Conf->peek_conf(%opt)->{trakt_class};
 
   if(! defined $class_name)
   {
@@ -317,8 +317,8 @@ sub BUILD
 {
   my $self = shift;
 
-  my $convoy_class = $self->conf2->{convoy_class};
-  my $intendant_class = $self->conf2->{intendant_class};
+  my $convoy_class = $self->conf->{convoy_class};
+  my $intendant_class = $self->conf->{intendant_class};
 
   # Подключаем директорию lib из директории исследоования, если она есть
   if (-d $self->conf_dir."/lib")
@@ -347,7 +347,7 @@ sub BUILD
   }
 
 
-  my $features_available = $self->conf2->{features_available};
+  my $features_available = $self->conf->{features_available};
   $features_available = {map {$_ => 1} @$features_available};
 
   my $is_ok = 1;

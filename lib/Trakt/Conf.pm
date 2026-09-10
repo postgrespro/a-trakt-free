@@ -1,4 +1,4 @@
-package Trakt::Conf2;
+package Trakt::Conf;
 
 use Moose::Role;
 #use MooseX::RequiresClass;
@@ -9,7 +9,7 @@ use JSON;
 use Path::Tiny;
 use TOML::Tiny qw( from_toml );
 
-has "conf2" => (is =>'rw', lazy => 1, builder => '_conf_lazy');
+has "conf" => (is =>'rw', lazy => 1, builder => '_conf_lazy');
 has "forced_conf" => (is =>'rw', lazy => 1, builder => '_read_forced_conf');
 
 sub _conf_lazy
