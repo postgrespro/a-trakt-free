@@ -14,7 +14,7 @@ use SDL::Stapel::Postgres::ReleaseSpec;
 
 use Moose;
 
-with 'Trakt::Conf2', 'Trakt::Conf2Role', 'Trakt::CommandExecutorRole';
+with 'Trakt::Conf2','Trakt::CommandExecutorRole';
 
 has 'name' =>   (is => 'ro', required => 1);
 has 'trakt_path' => (is => 'rw');

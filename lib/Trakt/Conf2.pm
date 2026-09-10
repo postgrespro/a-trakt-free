@@ -7,8 +7,10 @@ use Moose::Role;
 
 use JSON;
 use Path::Tiny;
+use TOML::Tiny qw( from_toml );
 
-has "conf2" =>(is =>'rw', lazy => 1, builder => '_conf_lazy');
+has "conf2" => (is =>'rw', lazy => 1, builder => '_conf_lazy');
+has "forced_conf" => (is =>'rw', lazy => 1, builder => '_read_forced_conf');
 
 sub _conf_lazy
 {
@@ -54,7 +56,6 @@ sub conf_dir
   my %opt = @_;
 
   return $self->_conf_dir($self->name, $self->trakt_path);
-
 }
 
 sub _conf_dir
@@ -90,6 +91,30 @@ sub peek_conf
   my $res = _read_trakt_conf(undef, $trakt_conf_file);
 
   return $res;
+}
+
+# Forced conf -- это кастомный конфиг который применяется поверх конфига штатного.
+# Позволяет переопределить какие-то из значений конфигов тракта и шага во время текущего
+# запуска
+
+sub forced_conf_name
+{
+    my $self = shift;
+    my $trakt_name = $self->name;
+
+    my $res = $self->work_dir->child("$trakt_name.toml");
+    return $res;
+}
+
+sub _read_forced_conf
+{
+    my $self = shift;
+
+    my $name = $self->forced_conf_name;
+
+    return {} unless $name->exists;
+
+    return from_toml( $name->slurp_utf8 );
 }
 
 1;
