@@ -18,17 +18,17 @@ my $convoy = Trakt::Convoy->new(
 );
 
 # tests project_version_major
-$trakt_mock->mock('conf', sub { return { branch => 'shardman' } });
+$trakt_mock->mock('branch', sub { return 'shardman' });
 is $convoy->project_version_major, 14, 'should return 14';
-$trakt_mock->mock('conf', sub { return { branch => 'shardman-dev' } });
+$trakt_mock->mock('branch', sub { return 'shardman-dev' });
 is $convoy->project_version_major, 14,  'should return 14';
-$trakt_mock->mock('conf', sub { return { branch => 'master' } });
-is $convoy->project_version_major, 16,  'should return 14';
-$trakt_mock->mock('conf', sub { return { branch => 'REL_12' } });
+$trakt_mock->mock('branch', sub { return 'master' });
+is $convoy->project_version_major, 16,  'should return 16';
+$trakt_mock->mock('branch', sub { return  'REL_12' });
 is $convoy->project_version_major, 12,  'should return 12';
-$trakt_mock->mock('conf', sub { return { branch => 'std-12' } });
+$trakt_mock->mock('branch', sub { return 'std-12' });
 is $convoy->project_version_major, 12,  'should return 12';
-$trakt_mock->mock('conf', sub { return { branch => 'ent-12' } });
+$trakt_mock->mock('branch', sub { return  'ent-12' });
 is $convoy->project_version_major, 12,  'should return 12';
 
 done_testing();
