@@ -162,7 +162,7 @@ sub run
 
   my @targets = $self->targets;
 
-  print "================ Running step: ".$self->name." ====================\n";
+  print "================ Running step: " . $self->name. "(" . ref($self) . ")  ====================\n";
   if ($self->done_flag->exists)
   {
     print "Step already done, skiping...\n";

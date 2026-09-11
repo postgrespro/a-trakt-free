@@ -143,6 +143,10 @@ sub step
   unless (defined  $self->{_steps}->{$name})
   {
     my $class_name = $self->conf->{steps}->{$name};
+
+    # подменяем имя класа на класс из forced_conf если оно там есть
+    $class_name = $self->forced_conf->{$name}->{force_class} // $class_name;
+
     die "Step class name is not defined for step '$name'" unless defined $class_name;
     load $class_name;
     $self->{_steps}->{$name} = $class_name->create(parent => $self, name => $name);
