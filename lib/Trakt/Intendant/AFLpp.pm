@@ -5,7 +5,7 @@ use Path::Tiny;
 
 # has 'version' => (is => 'rw', lazy => 1, builder => '_version');
 has 'trakt' => (is => 'ro', required => 1, isa => "Trakt");
-has 'binary_dir' => (is => 'rw', default => undef);
+has 'binary_dir' => (is => 'rw', lazy => 1, builder => '_lazy_binary_dir');
 
 =cut
 sub _version
@@ -21,6 +21,17 @@ sub _version
   return $res;
 }
 =cut
+
+# По умолчанию ищем AFL++ в директории сборки исследуемой программы с AFL++.
+# Если надо как-то еще, то переопределите либо метод, либо задайте значение по умолчанию при инициализаици
+
+sub _lazy_binary_dir
+{
+  my $self = shift;
+  my $stapel_afl = $self->trakt->step('build')->target('afl')->afl_stapel;
+  my $afl_path = $stapel_afl->install_dir->absolute->child('bin');
+  return $afl_path;
+}
 
 # Заполучить команду запуска интересующего бинарника.
 # Например $trakt->intendant->AFLpp->binary('fuzz-afl')
