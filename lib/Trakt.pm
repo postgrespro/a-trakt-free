@@ -155,12 +155,10 @@ sub step
 }
 
 # Директория в кторой находится сам алабамский тракт
-
 sub top_dir  # вот не уверен что имя хорошее, но пусть будет так....
 {
-  return path($INC{"Trakt.pm"})->parent->parent;
+  return path(__FILE__)->parent->parent->relative;
 }
-
 
 # этот метод запускается в самом начале, при запуске тракта и запускает early_run'ы для каждого шага.
 # Позволяет подготовительную работу сделать...
@@ -384,6 +382,40 @@ sub has_feature
     return 1 if $_ eq $name;
   }
   return 0;
+}
+
+# Метод класса, находит директорию конфигурации тракта по имени или по пути
+sub split_trakt_path
+{
+  my $class = shift;
+  my $trakt_name = shift;
+  $trakt_name = path($trakt_name);
+
+  my $top_dir = $class->top_dir()->absolute;
+  # Путь к тракту исторически считается от корня алабамского тракта
+  # FIXME это наверное надо переделать. Но пока оставим как есть.
+
+  # Если задан полный путь, или относительный путь относительно текущей директории
+  if ($trakt_name->child('trakt.conf')->exists)
+  {
+    $trakt_name = $trakt_name->absolute;
+    my $dir_name = $trakt_name->parent()->relative($top_dir);
+    my $name = $trakt_name->basename();
+    return ($dir_name, $name);
+  } else
+  {
+    # Если указали относительный путь от корня алабамского тракта
+    if ($top_dir->child($trakt_name)->child('trakt.conf')->exists)
+    {
+      return ($trakt_name->parent, $trakt_name->basename);
+    }
+    # Если имя это имя тракта без пути, то ищем его в штатных директориях для трактов
+    foreach my $dir (qw(trakts))
+    {
+      return (path($dir), $trakt_name) if $top_dir->child($dir)->child($trakt_name)->child('trakt.conf')->exists;
+    }
+  }
+  die "Тракт '$trakt_name' не найден";
 }
 
 1;

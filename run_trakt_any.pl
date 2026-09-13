@@ -10,8 +10,7 @@ use Trakt;
 
 my $trakt_conf_dir = shift @ARGV;
 
-my $trakt_name = path($trakt_conf_dir)->basename;
-my $trakt_dir = path($trakt_conf_dir)->parent;
+my ($trakt_dir, $trakt_name) = Trakt->split_trakt_path($trakt_conf_dir);
 
 my $branch_name = shift @ARGV;
 die "Укажите вторым аргументом имя исследуемой ветки или путь tarball'у с дистрибутивом" unless $branch_name;
@@ -22,15 +21,6 @@ if (-e $branch_name)
 {
   $tarball = $branch_name;
   $branch_name = undef;
-}
-
-if ("$trakt_conf_dir" eq "$trakt_name")
-{
-  # Если директорию нам не указали, провериим, нет ли тракта с таким именем в директории trakts
-  if (path($FindBin::Bin)->child('trakts')->child($trakt_name)->child('trakt.conf')->exists)
-  {
-    $trakt_dir = path('trakts');
-  }
 }
 
 my $trakt_init_args = {

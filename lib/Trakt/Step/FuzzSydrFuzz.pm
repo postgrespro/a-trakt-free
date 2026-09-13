@@ -166,7 +166,7 @@ END_CONF
   $self->report_file($sydrfuzz_conf_file);
 
   my $sydr_dir = path($self->trakt->conf->{sydr});
-  $sydr_dir = $sydr_dir->absolute($self->trakt->top_dir) if $sydr_dir->is_relative;
+  $sydr_dir = $sydr_dir->absolute($self->trakt->top_dir->absoulute) if $sydr_dir->is_relative;
   die "Sydr dir '$sydr_dir' is not found" unless $sydr_dir->is_dir();
 
   my $fuzzer_command = "cd $cache_dir ; $sydr_dir/sydr-fuzz -c $cache_dir/sydr-fuzz.toml run";
