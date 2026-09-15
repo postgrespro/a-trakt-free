@@ -40,8 +40,7 @@ my $target_cache_dir = path($FindBin::Bin.$cache_tmpl_step."/target1");
 =head1 TEST: Вызывает die, если JSON-файл конфигурации не найден (по умолчанию — config.json)
 =cut
 subtest 'Вызывает die, если JSON-файл конфигурации не найден (по умолчанию — config.json)' => sub {
-    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name );
-    $trakt->work_dir($tmp_dir);
+    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name, work_dir => $tmp_dir );
     # step1 не имеет конфигурационных файлов
     throws_ok(
         sub {
@@ -56,8 +55,7 @@ subtest 'Вызывает die, если JSON-файл конфигурации �
 =head1 TEST: Вызывает die, если указанный в параметрах JSON-файл (например, my_config.json) не найден
 =cut
 subtest 'Вызывает die, если указанный в параметрах JSON-файл (например, my_config.json) не найден' => sub {
-    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name );
-    $trakt->work_dir($tmp_dir);
+    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name, work_dir => $tmp_dir );
     # step1 имеет пустую conf_dir — my_config.json отсутствует
     throws_ok(
         sub {
@@ -73,8 +71,7 @@ subtest 'Вызывает die, если указанный в параметра
 =cut
 subtest 'Возвращает hashref с параметрами из указанного JSON-файла (my_config.json), если forced_conf не задан' => sub {
     $tmp_dir->mkpath unless $tmp_dir->exists;
-    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name );
-    $trakt->work_dir($tmp_dir);
+    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name, work_dir => $tmp_dir );
     # step2 имеет my_config.json и не упоминается в 011_forced_conf.toml — читаем из файла
     my $actual = $trakt->step('step2')->conf('my_config');
     my $expected = {
@@ -95,10 +92,9 @@ subtest 'Возвращает hashref с параметрами из указа�
 =cut
 subtest 'Возвращает hashref с параметрами из forced_conf (приоритет над локальным файлом конфигурации)' => sub {
     $tmp_dir->mkpath unless $tmp_dir->exists;
-    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name );
-    $trakt->work_dir($tmp_dir);
     # forced_conf читается из work_dir/011_forced_conf.toml; step3 и my_config заданы в toml
     $trakt_dir->child("$trakt_name.toml")->copy($tmp_dir);
+    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name, work_dir => $tmp_dir );
 
     my $actual = $trakt->step('step3')->conf('my_config');
     my $expected = { list => [ 'value1', 'value2', 'value3' ] };
@@ -116,8 +112,7 @@ subtest 'Возвращает hashref с параметрами из forced_conf
 subtest 'Первое обращение читает конфиг из файла, второе и последующие — из кеша (подмена файла не влияет)' => sub {
     $tmp_dir->mkpath unless $tmp_dir->exists;
     _copy_trakt_dir( $trakt_dir, $tmp_dir->child($trakt_name) );
-    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name );
-    $trakt->work_dir($tmp_dir);
+    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name, work_dir => $tmp_dir );
     $trakt->trakt_path($tmp_dir);
 
     my $step    = $trakt->step('step2');
@@ -147,8 +142,7 @@ subtest 'При forced_conf первое обращение — из forced_conf
     _copy_trakt_dir( $trakt_dir, $tmp_dir->child($trakt_name) );
     $trakt_dir->child("$trakt_name.toml")->copy($tmp_dir);
 
-    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name );
-    $trakt->work_dir($tmp_dir);
+    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name, work_dir => $tmp_dir );
     $trakt->trakt_path($tmp_dir);
 
     my $step = $trakt->step('step3');
@@ -173,8 +167,7 @@ subtest 'При forced_conf первое обращение — из forced_conf
 =cut
 subtest 'Вызов conf для другого конфига не затирает кеш первого (изоляция кеша по имени конфига)' => sub {
     $tmp_dir->mkpath unless $tmp_dir->exists;
-    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name );
-    $trakt->work_dir($tmp_dir);
+    my $trakt = Trakt->create( name => $trakt_name, branch => $branch_name, work_dir => $tmp_dir );
     my $step = $trakt->step('step3');
     # config_one.json и config_two.json уже лежат в тракте step3/
     my $config1 = { list => [ 1, 2 ] };

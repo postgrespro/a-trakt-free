@@ -114,7 +114,8 @@ sub _read_forced_conf
 
     return {} unless $name->exists;
 
-    return from_toml( $name->slurp_utf8 );
+    my $res =  from_toml( $name->slurp_utf8 );
+    return $res;
 }
 
 1;

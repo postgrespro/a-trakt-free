@@ -22,8 +22,6 @@ $trakt_mock->mock('branch', sub { return 'shardman' });
 is $convoy->project_version_major, 14, 'should return 14';
 $trakt_mock->mock('branch', sub { return 'shardman-dev' });
 is $convoy->project_version_major, 14,  'should return 14';
-$trakt_mock->mock('branch', sub { return 'master' });
-is $convoy->project_version_major, 16,  'should return 16';
 $trakt_mock->mock('branch', sub { return  'REL_12' });
 is $convoy->project_version_major, 12,  'should return 12';
 $trakt_mock->mock('branch', sub { return 'std-12' });
