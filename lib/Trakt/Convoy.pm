@@ -4,7 +4,8 @@ use Moose;
 
 use String::ShellQuote;
 
-has 'trakt' => (is => 'ro', required => 1, isa => "Trakt");
+has 'trakt' => (is => 'ro', required => 1, isa => "Trakt", weak_ref => 1);
+has 'ignore_leaks' => (is => 'rw', default => 0);
 has 'default_build' => (is => 'rw', default => "none"); # Сборка по умолчанию, если делаются какие-то информационные запросы общего характера к исследуемой программе (например получить список целей), то делаются они именно к этому варианту сборки. Должно быть переопределено.
 
 

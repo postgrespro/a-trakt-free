@@ -36,16 +36,30 @@ use Path::Tiny;
 use String::ShellQuote;
 use JSON;
 
-sub afl_env
-{
-  return"";
-}
-
 sub afl_extra_options
 {
   my $self = shift;
 
   return "";
+}
+
+sub afl_instance_env
+{
+  my $self = shift;
+  my $instance_name = shift;
+
+  # Берем за основу переменные окружения для инстанса исследуемой программы
+  my $instance_env = $self->trakt->convoy->instance_env($self->cache_dir->child('storage'), $instance_name);
+
+  #$instance_env->{AFL_MAP_SIZE} = 880000; # Вроде уже больше не надо явно указывать, AFL сам определяет, автоматически
+  $instance_env->{ASAN_OPTIONS} = "abort_on_error=1:symbolize=0";
+  $instance_env->{ASAN_OPTIONS} .= ":detect_leaks=0" if $self->trakt->convoy->ignore_leaks;
+
+  my $afl_preload = $self->trakt->convoy->preload_lib_env('afl', $self->name);
+  $instance_env->{AFL_PRELOAD} = $afl_preload if $afl_preload;
+
+
+  return $instance_env;
 }
 
 sub prepare_watchdog_conf
@@ -105,14 +119,10 @@ sub afl_runner_conf
   my $target_command = $self->trakt->convoy->command('afl',$self->name,'@@');
   my $nproc = $self->trakt->intendant->nproc;
   my $storage_init_command = $self->trakt->convoy->instance_init_command($self->cache_dir->child('storage'), '@INSTANCE_NAME@');
-  my $instance_env = $self->trakt->convoy->instance_env($self->cache_dir->child('storage'), '@INSTANCE_NAME@');
-
-  my $afl_preload = $self->trakt->convoy->preload_lib_env('afl', $target_name);
-  $instance_env->{AFL_PRELOAD} = $afl_preload if $afl_preload;
 
   my $afl_runner_options = {
     fuzzer  => "$afl_bin",
-    env     =>{AFL_MAP_SIZE=>880000, ASAN_OPTIONS => "detect_leaks=0:abort_on_error=1:symbolize=0", %{$instance_env}},
+    env     => $self->afl_instance_env('@INSTANCE_NAME@'),
     options => "-i $in_dir -o $out_dir -t 1000 ",
     command => $target_command,
     banner  => "$branch_name:$trakt_short_name $target_name $target_n/$targets_count",
@@ -148,10 +158,9 @@ sub tmux_runner_conf
   my $afl_runner_conf = $self->cache_dir->child('afl_runner.conf');
   $afl_runner_conf->spew(JSON->new->pretty->encode($afl_runner_options));
 
-  my $runner_env = $self->afl_env();
   my $afl_extra_options = $self->afl_extra_options();
 
-  my $afl_command = "$runner_env $afl_start_script $afl_runner_conf";
+  my $afl_command = "$afl_start_script $afl_runner_conf";
 
   my $watchdog_conf = $self->prepare_watchdog_conf();
 
