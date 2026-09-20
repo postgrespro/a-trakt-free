@@ -66,10 +66,11 @@ sub _conf_dir
 
   $trakt_path = path($trakt_path || '.');
 
-  # Относительный путь считается от местоположения запускаемой программы
+  # Относительный путь считается от местоположения корна алабамского тракта
+  # FIXME Это возможно не правильно, но это сложившаяся практика. Рассмотреть изменение этого поведения
   if ($trakt_path->is_relative)
   {
-     $trakt_path = path($FindBin::Bin)->child($trakt_path);
+     $trakt_path = Trakt->top_dir->child($trakt_path);
   }
   return $trakt_path->child($trakt_name)->absolute;
 }

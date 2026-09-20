@@ -404,6 +404,15 @@ sub split_trakt_path
     return ($dir_name, $name);
   } else
   {
+    # Путь может быть указан относительно бинарника запускаемой программы
+    # (так было в прошлые времена). Для обратной совместимости поддержим и такое развитие событий
+    if (path($FindBin::Bin)->child($trakt_name)->child('trakt.conf')->exists)
+    {
+      $trakt_name = path($FindBin::Bin)->child($trakt_name)->absolute;
+      my $dir_name = $trakt_name->parent()->relative($top_dir);
+      my $name = $trakt_name->basename();
+      return ($dir_name, $name);
+    }
     # Если указали относительный путь от корня алабамского тракта
     if ($top_dir->child($trakt_name)->child('trakt.conf')->exists)
     {
