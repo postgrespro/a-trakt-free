@@ -157,7 +157,8 @@ sub step
 # Директория в кторой находится сам алабамский тракт
 sub top_dir  # вот не уверен что имя хорошее, но пусть будет так....
 {
-  return path(__FILE__)->parent->parent->relative;
+  my $res = path(__FILE__)->parent->parent->relative;
+  return $res;
 }
 
 # этот метод запускается в самом начале, при запуске тракта и запускает early_run'ы для каждого шага.
@@ -277,6 +278,14 @@ sub BUILDARGS
   my $args = @_==1 ? $_[0] : {@_};  # Берем параметры и из ссылки на хеш и из хеша
 
   $args->{cert} = Trakt::Cert->new(conf_file => $args->{cert_conf});
+
+  my $trakt_name = $args->{name};
+  my $trakt_path = $args->{trakt_path} // '.';
+
+  ($trakt_path, $trakt_name) = Trakt->split_trakt_path(path($trakt_path)->child($trakt_name));
+
+  $args->{name}=$trakt_name;
+  $args->{trakt_path}=$trakt_path;
 
   if ($args->{tarball})
   {

@@ -84,7 +84,9 @@ sub peek_conf
   my %opt = @_;
 
   my $trakt_name = $opt{name};
-  my $trakt_path = $opt{trakt_path};
+  my $trakt_path = $opt{trakt_path} // '.';
+
+  ($trakt_path, $trakt_name) = Trakt->split_trakt_path(path($trakt_path)->child($trakt_name));
 
   my $conf_dir = _conf_dir(undef, $trakt_name, $trakt_path);
   my $trakt_conf_file = $conf_dir->child("trakt.conf");

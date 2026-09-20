@@ -26,7 +26,7 @@ select(STDERR); # перенаправляем стандартый вывод �
 $trakt->run();
 select(STDOUT); #возвращаем стандарный вывод на место и приступаем к тестированию...
 
-my $stat_json_file = $tmp_dir->child('010_postprocess/postprocess_trakt.none.res/target1')->child('stat.json');
+my $stat_json_file = $tmp_dir->child('postprocess_trakt.none.res/target1')->child('stat.json');
 
 ok($stat_json_file->exists, 'stat.json exists');
 

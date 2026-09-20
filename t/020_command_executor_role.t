@@ -20,7 +20,7 @@ my $trakt_name = "020_command_executor_role/020_trakt";
 my $tmp_dir = path($FindBin::Bin."/tmp");
 $tmp_dir->remove_tree if $tmp_dir->exists;
 
-my $tmpl = "/tmp/020_command_executor_role/020_trakt.none.";
+my $tmpl = "/tmp/020_trakt.none.";
 
 my $cache_tmpl = $tmpl."cache/step1";
 my $exch_tmpl = $tmpl."exch/step1";
@@ -51,7 +51,7 @@ sub strip_log_file
     my $lf = shift;
     my $tail = shift;
 
-    my $pt1 = $FindBin::Bin."/tmp/020_command_executor_role/020_trakt.none.cache";
+    my $pt1 = $FindBin::Bin."/tmp/020_trakt.none.cache";
     my $pt2 = "";
     $pt1 = $pt1.$tail;
 
