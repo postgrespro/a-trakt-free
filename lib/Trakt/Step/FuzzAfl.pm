@@ -47,9 +47,15 @@ sub afl_instance_env
 {
   my $self = shift;
   my $instance_name = shift;
+  my $instance_contexts_dir = shift; # Это директория с файловыми "контекстами" для инстансов исследуемой программы.
+                                     # В случае PostgreSQL это директории PGDATA, в других случаях директории с какими-то
+                                     # еще файлами нужными для работы инстансов.
+
+  # Если не задан, то значит мы в нормальном фаззинге и берем заранее подготовленные инстансы
+  $instance_contexts_dir //= $self->cache_dir->child('storage');
 
   # Берем за основу переменные окружения для инстанса исследуемой программы
-  my $instance_env = $self->trakt->convoy->instance_env($self->cache_dir->child('storage'), $instance_name);
+  my $instance_env = $self->trakt->convoy->instance_env($instance_contexts_dir, $instance_name);
 
   #$instance_env->{AFL_MAP_SIZE} = 880000; # Вроде уже больше не надо явно указывать, AFL сам определяет, автоматически
   $instance_env->{ASAN_OPTIONS} = "abort_on_error=1:symbolize=0";
