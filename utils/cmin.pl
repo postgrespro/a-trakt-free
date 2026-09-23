@@ -22,7 +22,7 @@ die "Укажите имя исследуемой цели третьим арг
 my $samples_in_dir = shift @ARGV;
 
 my $trakt = Trakt->create(name => $trakt_name, branch => $branch_name, cert_conf => 'cert.conf');
-my $out_dir = "$target_name.cmin.out";
+my $out_dir = path("$target_name.cmin.out")->absolute;
 
 `rm -rf $out_dir`;
 `mkdir $out_dir`;

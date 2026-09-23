@@ -23,7 +23,7 @@ die "Укажите имя исследуемой цели третьим арг
 my $samples_in_dir = shift @ARGV;
 
 my $trakt = Trakt->create(name => $trakt_name, branch => $branch_name, cert_conf => 'cert.conf');
-my $out_dir = path("$target_name.cmin-tmin.out");
+my $out_dir = path("$target_name.cmin-tmin.out")->absolute;
 my $tmp_dir = Path::Tiny->tempdir();
 
 `rm -rf $out_dir`;
@@ -56,6 +56,7 @@ my $progress = Term::ProgressBar->new({count => int(@samples), ETA => 'linear'})
 my $count = 0;
 foreach my $in_file (@samples)
 {
+  local %ENV = (%ENV, %$instance_env);
   my $basename = $in_file->basename;
   my $out_file = $out_dir->child($basename);
   my $command = "$tmin_binary -i $in_file -o $out_file -- $target_command";
@@ -64,6 +65,7 @@ foreach my $in_file (@samples)
   $progress->update($count);
   print "\n";
   print "RUNNING: $command\n";
-  system("$command");
+  my $res = system("$command");
+  die "Выполнение tmin завершилось с ошибкой" if $res;
 }
 

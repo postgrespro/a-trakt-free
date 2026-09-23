@@ -22,12 +22,13 @@ die "Укажите имя уменьшаемого образца четвер�
 
 my $sample_out = path(path($sample_in)->basename.".min")->absolute;
 
-my $trakt = Trakt->create(name => $trakt_name, branch => $branch_name, cert_conf => 'cert.conf', trakt_path => $trakt_dir );
+my $trakt = Trakt->create(name => $trakt_name, branch => $branch_name, cert_conf => 'cert.conf' );
 
 `rm -rf tmin.out`;
 `mkdir tmin.out`;
 `rm -rf tmin.pgdata`;
 
+my $fuzz_target = $trakt->step('fuzz_afl')->target($target_name);
 my $instance_env = $fuzz_target->afl_instance_env('tmin.pgdata','.');
 
 my $instance_init_command = $trakt->convoy->instance_init_command('.', 'tmin.pgdata');
