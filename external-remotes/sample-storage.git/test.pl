@@ -82,6 +82,11 @@ sub process_args {
         shift @ARGV;
         my %h = new_process_args; my @res = Samples::create_certification (%h, conf => $conf_name, cert => shift @ARGV);
     }
+    if ($command eq 'create-project') {
+        shift @ARGV;
+        shift @ARGV;
+        my %h = new_process_args; my @res = Samples::create_certification (%h, conf => $conf_name, project => shift @ARGV);
+    }
 
     if ($command eq 'list-branches') {
         shift @ARGV;
@@ -104,7 +109,6 @@ sub process_args {
         print help(3);
         Samples::put_sample($conf_name, @_);
     }
-    elsif ($command eq 'create-project')      { Samples::create_project         ($conf_name, @_);}
     elsif ($command eq 'delete-project')      { Samples::delete_project         ($conf_name, @_);}
     elsif ($command eq 'delete-cert')         { Samples::delete_certification   ($conf_name, @_);}
     elsif ($command eq 'delete-branch')       { Samples::delete_branch          ($conf_name, @_);}

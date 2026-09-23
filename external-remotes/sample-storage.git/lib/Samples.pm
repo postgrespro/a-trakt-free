@@ -86,8 +86,34 @@ sub get_sample {
 # У нас пока один проект
 sub guess_project
 {
-  print STDERR "Guessing project name = postgrespro\n";
-  return "postgrespro";
+    my %opt = @_;
+    my $dbh = _dbh($opt{conf});
+
+    return $opt{project} if defined $opt{project}; # Если вдруг нам гадать не надо
+
+    my @res = ();
+    if ($opt{trakt})
+    {
+        my $sql = "SELECT project_name FROM trakts WHERE trakt_name = ?";
+        my $sth = $dbh->prepare($sql);
+        $sth->execute($opt{trakt});
+        my @res;
+        while (my ($v) = $sth->fetchrow_array)
+        {
+          push @res, $v;
+        }
+        if (int(@res) > 1)
+        {
+          die "Не могу угадать project по имени тракта. Тракт '" . $opt{trakt} . "' присутсвует в нескольких проектах: ". join (", ", @res);
+        }
+        if (! @res)
+        {
+          die "Не могу угадать project по имени тракта. Тракт '" . $opt{trakt} . "' не обноружен";
+        }
+        print STDERR "Guessing project name = '". $res[0] ."'\n";
+        return shift @res;
+    }
+    die "Не могу угадать project по имени тракта. Тракт не указан";
 }
 
 sub guess_cert
@@ -316,11 +342,12 @@ sub get_latest_cert_samples {
 }
 
 sub create_project {
-    my $conf_name = shift;
-    my $dbh = _dbh($conf_name);
-    my $project = $_[0];
+    my %opt = @_;
+    my $dbh = _dbh($opt{conf});
 
-    die "\nNot enough arguments\n" unless defined $project;
+    my $project = $opt{project};
+
+    die "Пожалуйста укажите имя создаваемого проекта" unless defined $project;
 
     my $sth = $dbh->prepare("INSERT INTO projects(project_name) values(?)");
     my $num = $sth->execute($project);
@@ -596,6 +623,23 @@ sub list_trakts {
     }
     return @res;
 }
+
+sub list_projects {
+    my %opt = @_;
+    my $dbh = _dbh($opt{conf});
+
+    my $sql = "SELECT project_name FROM projects";
+
+    my $sth = $dbh->prepare($sql);
+    $sth->execute();
+
+    my @res = ();
+    while (my @row = $sth->fetchrow_array) {
+        push @res, $row[0];
+    }
+    return @res;
+}
+
 
 sub print_list_certs {
      my @certs = list_certs(@_);

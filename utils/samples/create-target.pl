@@ -26,7 +26,9 @@ die "Укажите имя создаваемой цели последним а
 my $trakt_dir = path($FindBin::Bin)->parent->parent;
 my $conf = $trakt_dir->child('fuzzing.unit-based.#/sample_storage_get/config.json');
 
-my $res = prompt ("Созаем цель '$target' в тракте '$trakt'? (y/n)", "-y", "-stdio");
+$project = Samples::guess_project(conf => $conf, trakt => $trakt);
+
+my $res = prompt ("Созаем цель '$target' в тракте $trakt($project)? (y/n)", "-y", "-stdio");
 
 if ($res !~/^[yY]$/)
 {
