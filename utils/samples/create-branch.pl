@@ -24,7 +24,7 @@ my $conf = $trakt_dir->child('fuzzing.unit-based.#/sample_storage_get/config.jso
 my $new_branch = shift @ARGV;
 
 die "Укажите --project=[имя проекта] в которой создается ветка" unless $project;
-die "Укажите имя создаваемой ветки первым аргументом" unless $new_branch;
+die "Укажите имя создаваемой ветки последним аргументом" unless $new_branch;
 
 my $res = prompt ("Созаем ветку '$new_branch' в проекте '$project'? (y/n)", "-y");
 
