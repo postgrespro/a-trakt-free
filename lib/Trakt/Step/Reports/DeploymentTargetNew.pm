@@ -28,9 +28,11 @@ around 'core_run' => sub {
   $self->$orig(@args)
 };
 
-around 'debdeps' => sub {
+around 'debdeps' => sub
+{
     my $orig = shift;
     my $self = shift;
+    return ($self->$orig(@_));
 };
 
 sub tt_process
