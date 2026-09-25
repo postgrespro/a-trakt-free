@@ -195,6 +195,7 @@ sub debdeps
     my @l = $step->debdeps();
     push @res, @l;
   }
+  push @res, $self->convoy->debdeps() if $self->convoy;
   return @res;
 }
 
@@ -281,6 +282,7 @@ sub BUILDARGS
 
   my $trakt_name = $args->{name};
   my $trakt_path = $args->{trakt_path} // '.';
+  $args->{work_dir} = path($args->{work_dir}) if defined $args->{work_dir};
 
   ($trakt_path, $trakt_name) = Trakt->split_trakt_path(path($trakt_path)->child($trakt_name));
 
