@@ -62,13 +62,16 @@ sub cache_dir
 sub res_dir
 {
   my $self = shift;
-  return path($self->trakt->res_dir."/".$self->name);
+  # В "результатах" мы не говорим ничего о шагах. Результат может быть либо для цели, либо для всего тракта
+  # Наполняются эти результаты различными шагами.
+  # Поэтому имена шагов в иерархии опускаются
+  return $self->trakt->res_dir;
 }
 
 sub conf_dir
 {
   my $self = shift;
-  return path($self->trakt->conf_dir."/".$self->name);
+  return $self->trakt->conf_dir->child($self->name);
 }
 
 sub done_flag

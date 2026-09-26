@@ -3,11 +3,12 @@ package Trakt::Step::FuzzCoverage::Total;
 use strict;
 
 use Moose::Role;
-use Path::Tiny;
+with "Trakt::Role::CoverageLcov";
 
 use Code::CovTool;
 use Code::CovTool::Sources;
 
+use Path::Tiny;
 
 around 'after_run' => sub
 {
@@ -47,16 +48,10 @@ around 'after_run' => sub
     my $cov  = Code::CovTool->new( src => $src_o, file => "$detached_lcov_file" );
     $total->append( $cov );
   }
-  my $total_lcov_file = $self->exchange_dir->child('coverage_total');
+  my $total_lcov_file = $self->exchange_dir->child('coverage_total.lcov');
   $total_lcov_file->spew($total->export);
-  my $total_cov_base_name = 'coverage_total.html';
-  my $total_cov_html = $cache_dir->child($total_cov_base_name);
 
-
-  $self->run_command('generate_coverage',"genhtml -o $total_cov_html $total_lcov_file");
-  $self->run_command('generate_coverage',"tar -C $cache_dir -cvzf $total_cov_html.tgz $total_cov_base_name");
-
-  $self->run_command('saving_results',"cp $total_cov_html.tgz $res_dir");
+  $self->genhtml($total_lcov_file, 'coverage_total.html');
 
   $self->$orig(@args);
 };
