@@ -43,29 +43,28 @@ sub afl_extra_options
   return "";
 }
 
+
+around 'instance_env' => sub {
+  my $orig = shift;
+  my $self = shift;
+  my @args = @_;
+
+  my $res = $self->$orig(@args);
+  #$res->{AFL_MAP_SIZE} = 880000; # Вроде уже больше не надо явно указывать, AFL сам определяет, автоматически
+  $res->{ASAN_OPTIONS} = "abort_on_error=1:symbolize=0";
+  $res->{ASAN_OPTIONS} .= ":detect_leaks=0" if $self->trakt->convoy->ignore_leaks;
+
+  my $afl_preload = $self->trakt->convoy->preload_lib_env('afl', $self->name);
+  $res->{AFL_PRELOAD} = $afl_preload if $afl_preload;
+  return $res;
+};
+
+
+# для обратной совместимости. FIXME позже вычистить
 sub afl_instance_env
 {
   my $self = shift;
-  my $instance_name = shift;
-  my $instance_contexts_dir = shift; # Это директория с файловыми "контекстами" для инстансов исследуемой программы.
-                                     # В случае PostgreSQL это директории PGDATA, в других случаях директории с какими-то
-                                     # еще файлами нужными для работы инстансов.
-
-  # Если не задан, то значит мы в нормальном фаззинге и берем заранее подготовленные инстансы
-  $instance_contexts_dir //= $self->cache_dir->child('storage');
-
-  # Берем за основу переменные окружения для инстанса исследуемой программы
-  my $instance_env = $self->trakt->convoy->instance_env($instance_contexts_dir, $instance_name);
-
-  #$instance_env->{AFL_MAP_SIZE} = 880000; # Вроде уже больше не надо явно указывать, AFL сам определяет, автоматически
-  $instance_env->{ASAN_OPTIONS} = "abort_on_error=1:symbolize=0";
-  $instance_env->{ASAN_OPTIONS} .= ":detect_leaks=0" if $self->trakt->convoy->ignore_leaks;
-
-  my $afl_preload = $self->trakt->convoy->preload_lib_env('afl', $self->name);
-  $instance_env->{AFL_PRELOAD} = $afl_preload if $afl_preload;
-
-
-  return $instance_env;
+  return $self->instance_env(@_);
 }
 
 sub prepare_watchdog_conf
@@ -124,11 +123,11 @@ sub afl_runner_conf
 
   my $target_command = $self->trakt->convoy->command('afl',$self->name,'@@');
   my $nproc = $self->trakt->intendant->nproc;
-  my $storage_init_command = $self->trakt->convoy->instance_init_command($self->cache_dir->child('storage'), '@INSTANCE_NAME@');
+  my $context_init_command = $self->trakt->convoy->instance_init_command($self->cache_dir->child('instances_contexts'), '@INSTANCE_NAME@');
 
   my $afl_runner_options = {
     fuzzer  => "$afl_bin",
-    env     => $self->afl_instance_env('@INSTANCE_NAME@'),
+    env     => $self->instance_env('@INSTANCE_NAME@'),
     options => "-i $in_dir -o $out_dir -t 1000 ",
     command => $target_command,
     banner  => "$branch_name:$trakt_short_name $target_name $target_n/$targets_count",
@@ -136,7 +135,7 @@ sub afl_runner_conf
     slaves  => ($nproc - 1),
   };
 
-  $afl_runner_options->{storage_init} = $storage_init_command if $storage_init_command;
+  $afl_runner_options->{storage_init} = $context_init_command if $context_init_command;
 
   return $afl_runner_options;
 }
