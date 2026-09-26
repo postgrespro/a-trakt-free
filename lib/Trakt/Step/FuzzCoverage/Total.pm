@@ -37,7 +37,7 @@ around 'after_run' => sub
   foreach my $target_name (@targets)
   {
     my $target = $cov_step->target($target_name);
-    my $lcov_file = $target->exchange_dir->child('profdata.lcov');
+    my $lcov_file = $target->exchange_dir->child($target_name.'.profdata.lcov');
 
     print "============== ".$lcov_file."\n";
 

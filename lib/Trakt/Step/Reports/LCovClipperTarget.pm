@@ -64,7 +64,7 @@ sub do_clipping
       $in_file = "$path/$in_file";
     }
 
-    $in_file = $cov_cache->child($self->name.".html")->child($in_file.".gcov.html");
+    $in_file = $cov_cache->child($self->name.".coverage.html")->child($in_file.".gcov.html");
 
     my $out_file = $key;
     $out_file =~ s{/}{_}g;
