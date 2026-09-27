@@ -41,7 +41,7 @@ foreach (@branches)
 {
   $is_found = 1 if $_ eq $branch;
 }
-die "Ветка '$branch' не зарегистрирован в хранилище сэмплов" unless $is_found;
+die "Ветка '$branch' не зарегистрирована в хранилище сэмплов" unless $is_found;
 
 
 my @trakts = Samples::list_trakts(%opts);
