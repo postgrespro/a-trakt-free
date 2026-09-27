@@ -154,24 +154,6 @@ sub stash_report_var
   $self->{_report_vars_stash}->{$name}=$value;
 }
 
-# Запускает бианрник из директории bin.
-# Либо "глобального" в корне всей системы трактов, либо внутри самого тракта.
-
-sub exec_bin
-{
-  my $self = shift;
-  my $tag = shift;
-  my $bin = shift;
-  my $args = shift || "";
-  my $opts = shift || {};
-
-  my $full_bin = $self->find_bin($bin);
-
-  die "Executable '$bin' is not found" unless defined $full_bin;
-
-  $self->run_command($tag, "$full_bin $args", $opts);
-}
-
 sub save_vars
 {
   my $self = shift;
@@ -291,7 +273,7 @@ sub sklad
 # то переменные окружения для этого запуска добываются через метод instance_env. По умолчанию этот метод
 # идет за переменными окружения в конвой. Но роли шага или цели могут этот метод переопределить и добавить
 # что-то от себя.
-
+# FIXME этот метод дублирвется и в шаге и в цели. Надо как-то сделать общую роль что-ли на них двоих
 sub instance_env
 {
   my $self = shift;
@@ -309,5 +291,18 @@ sub instance_env
   return $instance_env;
 }
 
+# Команда запуска инстанса исследуемой программы. Скорее всего переопределять ее не понадобиться
+# Но для единообращия пусть тоже будет здесь.
+# FIXME этот метод дублирвется и в шаге и в цели. Надо как-то сделать общую роль что-ли на них двоих
+sub instance_command
+{
+  my $self = shift;
+  my $build_name = shift;
+  my $target_name = shift;
+  my $sample_path = shift;
+
+  my $command = $self->trakt->convoy->command($build_name, $target_name, $sample_path);
+  return $command;
+}
 
 1;

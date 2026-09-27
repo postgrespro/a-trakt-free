@@ -19,22 +19,6 @@ with "Trakt::Step::FuzzCoverage::SelfReportTarget", "Trakt::Role::CoverageLcov";
 use Path::Tiny;
 use String::ShellQuote;
 
-
-sub get_process_sample_command
-{
-  my $self = shift;
-  my $target_name = shift;
-  my $sample_file = shift;
-
-  my $env_h = $self->instance_env('coverage');
-  my $env_s = "";
-  foreach my $key (keys %$env_h)
-  {
-    $env_s.="$key=".shell_quote($env_h->{$key}). " ";     #FIXME перевести это в instance_env_str из конвоя
-  }
-  return "$env_s". $self->trakt->convoy->command('coverage', $target_name, $sample_file);
-}
-
 sub get_prepare_context_command
 {
   my $self = shift;
@@ -42,6 +26,7 @@ sub get_prepare_context_command
   return $res || "true";  # Суммарная команда у нас собирается через && и какая-то комнада там между эндами нужна. Поэтому если команды нет, то возвращаем true
 }
 
+# Явно очищаем всю директорию cache, чтобы повторные запуски не суммировали полученные профайлы
 around 'before_run' => sub {
   my $orig = shift;
   my $self = shift;
@@ -68,7 +53,10 @@ around 'core_run' => sub {
   my $profile_dir = $cache_dir->child("raw_profile");
   $self->run_command("prepare", "mkdir -p $profile_dir");
 
-  my $command = $self->get_process_sample_command($self->name, '$file');
+  my $command = $self->instance_command('coverage', $target_name, '$file');
+  $command = $self->compose_enved_command($self->instance_env('coverage'), $command); # Здесь coverage это имя инстанса а не сборки.
+                                                                                      # FIXME надо как-то по-другом назвать
+
   my $prepare_context_command = $self->get_prepare_context_command();
 
   $self->run_command('process_samples',"for file in $samples_dir/* ; do echo Processing \$file... && $prepare_context_command && $command ; done ; true"); # true чтобы $? всегда был по окончанию 0 и мы не прерывались по неуспешности запуска

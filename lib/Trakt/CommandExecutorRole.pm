@@ -85,4 +85,50 @@ sub run_command
   $self->log_after_command($tag, $command, $real_command, $command_output->slurp);
 }
 
+# Запускает бианрник из директории bin.
+# Либо "глобального" в корне всей системы трактов, либо внутри самого тракта.
+
+sub exec_bin
+{
+  my $self = shift;
+  my $tag = shift;
+  my $bin = shift;
+  my $args = shift || "";
+  my $opts = shift || {};
+
+  my $full_bin = $self->find_bin($bin);
+
+  die "Executable '$bin' is not found" unless defined $full_bin;
+
+  $self->run_command($tag, "$full_bin $args", $opts);
+}
+
+
+sub run_enved_command
+{
+  my $self = shift;
+  my $tag = shift;
+  my $env = shift;
+  my $command = shift;
+  my $opts = shift || {};
+
+  $self->run_command($tag, $self->compose_enved_command($env,$command), $opts);
+}
+
+sub compose_enved_command
+{
+  my $self = shift;
+  my $env = shift;
+  my $command = shift;
+
+  my $env_s = "";
+  foreach my $key (keys %$env)
+  {
+    $env_s.="$key=".shell_quote($env->{$key}). " ";
+  }
+  return "$env_s$command";
+}
+
+
+
 1;

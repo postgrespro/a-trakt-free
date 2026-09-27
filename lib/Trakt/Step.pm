@@ -291,4 +291,18 @@ sub instance_env
   return $instance_env;
 }
 
+# Команда запуска инстанса исследуемой программы. Скорее всего переопределять ее не понадобиться
+# Но для единообращия пусть тоже будет здесь.
+# FIXME этот метод дублирвется и в шаге и в цели. Надо как-то сделать общую роль что-ли на них двоих
+sub instance_command
+{
+  my $self = shift;
+  my $build_name = shift;
+  my $target_name = shift;
+  my $sample_path = shift;
+
+  my $command = $self->trakt->convoy->command($build_name, $target_name, $sample_path);
+  return $command;
+}
+
 1;
