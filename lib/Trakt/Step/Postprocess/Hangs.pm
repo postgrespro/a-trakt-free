@@ -33,6 +33,7 @@ around 'core_run' => sub {
   return unless $self->trakt->targets; # FIXME это наглый хак, чтобы оно не отрабатывало на  test.all. Надо как-то более умно сделать...
 
   $self->$orig(@args);
+  $self->timeout(); # Получаем значение из конфига, чтобы узнать о том, что конфига нет, даже если никаких зависаний обнружено не было.
 
   my $target_name = $self->name;
   my $step_name = $self->step->name;
