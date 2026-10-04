@@ -12,13 +12,10 @@ use Path::Tiny;
 use File::Grep;
 
 # ищет перловые программы и модули расположенные в тракте и смотрит какие модули они используют и пытается их поставить...
-my @trakts = (get_trakt_dirs(path('.')), get_trakt_dirs(path('trakts'))); # Ищем существующие тракты
-my @raw_list = ();
-my @deb_names=('libcarp-always-perl');
+my @trakts    = (get_trakt_dirs(path('.')), get_trakt_dirs(path('trakts'))); # Ищем существующие тракты
+my @deb_names = ('libcarp-always-perl');
 
-
-my @perl_files = ();
-
+my @perl_files;
 foreach my $trakt (@trakts, ".") # "." Это чтобы искать в lib из корня проекта
 {
   push @perl_files, recursive_file_find("$trakt/lib", qr/\.pm\z/) if -e "$trakt/lib";
@@ -28,8 +25,7 @@ push @perl_files, recursive_file_find("./t", qr/\.t\z/);
 push @perl_files, recursive_file_find("./utils", qr/\.pl\z/);
 push @perl_files, recursive_file_find(".", qr/\.pl\z/, 0);  # ищем с глубиной 0, т.е. только в самой директории
 
-my @modules_raw = ();
-
+my @modules_raw;
 foreach my $ress (File::Grep::fgrep {/^use/} @perl_files)
 {
   foreach my $n (values %{$ress->{matches}})
@@ -57,8 +53,8 @@ foreach my $ress (File::Grep::fgrep {/^with/} @perl_files)
 	}
 }
 
-my %known = ();
-my @perl_names = ();
+my %known;
+my @perl_names;
 foreach my $n (@modules_raw)
 {
   next if $n=~/^SDL::|^Local::|^Trakt/; # Внутрение пространства имен
@@ -74,6 +70,7 @@ foreach my $n (@modules_raw)
 
 foreach my $n (@perl_names)
 {
+  next if $n =~ /^#/; # закомментированные не интересуют 
   eval("use $n;"); # проверяем, не установлен ли этот модуль уже...
   next unless $@;
   $n = lc($n);
@@ -120,4 +117,3 @@ sub recursive_file_find
   }
   return @res;
 }
-
