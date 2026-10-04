@@ -9,7 +9,6 @@ use Trakt::Cert;
 use Path::Tiny;
 use FindBin;
 use Module::Load;
-use SDL::SecretService;
 use SDL::Stapel::Postgres::ReleaseSpec;
 
 use Moose;
@@ -19,7 +18,6 @@ with 'Trakt::Conf','Trakt::CommandExecutorRole';
 has 'name' =>   (is => 'ro', required => 1);
 has 'trakt_path' => (is => 'rw');
 has 'branch' =>   (is => 'rw');
-#has 'cert_conf' => (is => 'rw');
 has 'features' => (isa =>"ArrayRef[Str]", is => 'ro', default => sub{[]});
 
 has 'cert' => (is => 'rw', isa => 'Trakt::Cert');
@@ -27,7 +25,9 @@ has 'cert' => (is => 'rw', isa => 'Trakt::Cert');
 has 'convoy' => (is => 'rw', isa => 'Trakt::Convoy');
 has 'intendant' => (is => 'rw', isa => 'Trakt::Intendant', default=> sub{my $self = shift; Trakt::Intendant->new(trakt=>$self)});
 has '_sklads' => (is => 'ro', isa => 'HashRef[Trakt::Sklad]', default => sub{return {}});
-has 'secret_service' => (is => 'rw', isa => 'SDL::SecretService', default => sub {return SDL::SecretService->new()} );
+
+has 'secret_service_class' => (is => 'ro', isa => 'Str', default => 'SDL::SecretService');
+has 'secret_service' => (is => 'rw', isa => 'SDL::SecretService', lazy => 1, builder => 'init_secret_service' );
 
 has '_helling_init_args' => (is => 'ro', isa => 'HashRef');
 has 'helling' => (is => 'rw', isa => 'SDL::Helling', lazy => 1, default => sub {
@@ -247,19 +247,18 @@ sub create
   my %opt = @_;
   my $trakt_name = $opt{name};
 
-  my $class_name = Trakt::Conf->peek_conf(%opt)->{trakt_class};
+  my $conf = Trakt::Conf->peek_conf(%opt);
+  $opt{secret_service_class} //= $conf->{secret_service_class} if defined $conf->{secret_service_class};
 
-  if(! defined $class_name)
+  if ($conf->{trakt_class}) # Подменяем класс если так сказано в конфиге
   {
-    # используем дефолтный класс тракта: Trakt
-    return $class->new(@_);
+    $class = $conf->{trakt_class};
+    if (! moudule_is_loaded($class))
+    {
+      load $class;
+    }
   }
-
-  if (! moudule_is_loaded($class_name))
-  {
-    load $class_name;
-  }
-  return $class_name->new(%opt);
+  return $class->new(%opt);
 }
 
 sub moudule_is_loaded
@@ -438,4 +437,18 @@ sub split_trakt_path
   die "Тракт '$trakt_name' не найден";
 }
 
+
+sub init_secret_service
+{
+  my $self = shift;
+
+  my $class_name = $self->secret_service_class;
+
+  if (! moudule_is_loaded($class_name))
+  {
+    load $class_name;
+  }
+  my $res = $class_name->new();
+  return $res;
+}
 1;
