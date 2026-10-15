@@ -28,6 +28,9 @@ has version_prefixes => (is => 'rw',
 # Либо особое имя '*' -- взять патчи из всех поддидеркторий src/patches, а так же все файлы в ней же
 has patch_dirs => (is => 'rw', default=> '*');
 
+# Какого класса следует создавать стапель при сборке
+has stapel_class => (is => 'rw', isa => "ClassName", required => 1);
+
 
 ### Методы которые следует переопределить в дочерних классах определяющие поведение сборки
 
@@ -179,14 +182,16 @@ sub stapel
 {
   my $self = shift;
 
-  my $stapel = $self->trakt->helling->postgres(%{$self->stapel_init_args()});
+  my $helling = $self->trakt->helling;
 
-  if ($self->name eq 'afl') # FIXME это тоже надо переместить в stapel_init_args только подумать надо
-  {
-    $stapel->use_asan(1);
-  }
+  my $init_args = $self->stapel_init_args;
 
-  return $stapel;
+  my $extra_roles = $init_args->{extra_roles} || [];
+  $extra_roles = [$extra_roles] unless ref $extra_roles;  # Принудительно длеаем списком
+
+  my $res = $self->stapel_class->with_traits(@$extra_roles)->new(helling => $helling, %$init_args);
+
+  return $res;
 }
 
 around 'core_run' => sub {
