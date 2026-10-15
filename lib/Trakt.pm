@@ -50,6 +50,8 @@ has 'rsp' => (is => 'rw', lazy => 1, default => sub {
 
 has 'work_dir' => (is => 'rw', default => sub{path('.')}); # рабочая директория тракта, в которой будут создаваться поддиректории с рабочими материалами и результатами
 
+# Какие исходники велено брать для исследования
+has 'src_origin_spec' => (is => 'rw', isa =>'Str');
 
 # Alias для self
 sub trakt
@@ -308,19 +310,13 @@ sub BUILDARGS
 
     $args->{rsp} = $release_spec if $release_spec;
     $args->{branch} = $release_spec->branch;
-
-    # Вот тут вот может случиться неудобняк, если в качестве хеллинга передали готовый объект. Но пока скажем "а вы так не делайте", а потом подумаем как делать, если понадобиться.
-    $args->{helling} //= {};
-    $args->{helling}->{postgres} //= {};
-    $args->{helling}->{postgres}->{src_origin_class} = 'SDL::Stapel::Postgres::SrcOrigin::TarBall';
-    $args->{helling}->{postgres}->{src_origin} //= {};
-    $args->{helling}->{postgres}->{src_origin}->{file} = $args->{tarball};
-
   }
 
   # Если нам в helling вместо объекта передали хеш, то используем его для инициализации объекта
   $args->{_helling_init_args} = $args->{helling} if ref $args->{helling} eq 'HASH';
   delete $args->{helling} if ref $args->{helling} eq 'HASH';
+
+  $args->{'src_origin_spec'} = $args->{tarball} || $args->{branch};
 
   return $args;
 }

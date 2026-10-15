@@ -159,6 +159,7 @@ sub stapel_init_args
 
   my $res = {
     release_spec     => $self->trakt->rsp,
+    src_origin_spec  => $self->trakt->src_origin_spec,
     install_dir      => $install_dir,
     build_dir        => $build_dir,
     src_dir          => $src_dir,

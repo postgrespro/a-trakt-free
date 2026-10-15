@@ -7,8 +7,6 @@ use File::Copy::Recursive qw(rcopy);
 
 extends 'SDL::Stapel::SrcOrigin';
 
-has 'file' => (is => 'rw', isa => 'Str', required => 1);
-
 sub _sklad
 {
   my $self = shift;
@@ -32,11 +30,13 @@ sub get_sources
 
   my $tmp_dir = Path::Tiny->tempdir;
 
-  $self->helling->run_command('git_get_src', "tar -xvf ".$self->file." -C $tmp_dir");
+  my $tarball = $self->origin_spec; # Для случая tarball спецификатор источника исходников у нас путь к tarball-файлу
+
+  $self->helling->run_command('git_get_src', "tar -xvf $tarball -C $tmp_dir");
 
   my @subdirs = $tmp_dir->children();
-  die "Архив '".$self->file."' содержит более одной директории в корне. Так быть не должно " unless @subdirs == 1;
-  die "В архиве '".$self->file."' не директория" unless $subdirs[0]->is_dir;
+  die "Архив '$tarball' содержит более одной директории в корне. Так быть не должно " unless @subdirs == 1;
+  die "В архиве '$tarball' не директория" unless $subdirs[0]->is_dir;
 
   my $work_dir = $subdirs[0];
   $self->helling->run_command('tarball_copy_src', "cp -R $work_dir/. $dst_dir");

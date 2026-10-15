@@ -57,7 +57,10 @@ sub AFLpp
   my $extra_roles = $args{extra_roles} || [];
   $extra_roles = [$extra_roles] unless ref $extra_roles;  # Принудительно длеаем списком
 
-  my $res = SDL::Stapel::AFLpp->with_traits(@$extra_roles)->new(helling => $self, %args);
+  my $extra_args = {};
+  $extra_args->{helling} = $self;
+  $extra_args->{src_origin_spec} = "SDL::Stapel::AFLpp::SrcOrigin::Git";
+  my $res = SDL::Stapel::AFLpp->with_traits(@$extra_roles)->new(%args, %$extra_args);
 
   return $res;
 }

@@ -18,12 +18,25 @@ coerce 'Path::Tiny'
   => from 'Str',
   => via {path($_)->absolute};
 
+
+has src_origin_spec => (is => 'rw', required => 1);
+
 has release_spec_class => (is => 'ro', default => 'SDL::Stapel::ReleaseSpec');
 has release_spec => (is => 'rw', lazy => 1, isa => 'SDL::Stapel::ReleaseSpec', default => sub {my $self = shift; return $self->release_spec_class->new(helling => $self->helling, %{$self->_release_spec_init_args})});
 has '_release_spec_init_args' => (is => 'ro', isa => 'HashRef', default => sub{return {}});
 
-has src_origin_class => (is => 'ro', default => 'SDL::Stapel::SrcOrigin::Git');
-has src_origin => (is=>'ro', lazy => 1, default => sub {my $self = shift; return $self->src_origin_class->new(helling => $self->helling, %{$self->_src_origin_init_args})});
+has src_origin_class => (is => 'ro', default => 'SDL::Stapel::SrcOrigin');
+has src_origin_git_class => (is => 'ro', default => 'SDL::Stapel::SrcOrigin::Git');
+has src_origin_tarball_class => (is => 'ro', default => 'SDL::Stapel::SrcOrigin::TarBall');
+
+has src_origin => (is=>'ro', lazy => 1, default => sub {my $self = shift;
+                                                        return $self->src_origin_class->new(
+                                                              helling => $self->helling,
+                                                              origin_spec => $self->src_origin_spec,
+                                                              _tarball_class => $self->src_origin_tarball_class,
+                                                              _git_class => $self->src_origin_git_class,
+                                                            %{$self->_src_origin_init_args})
+                                                        });
 has '_src_origin_init_args' => (is => 'ro', isa => 'HashRef');
 
 
