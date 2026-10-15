@@ -20,7 +20,7 @@ around 'core_run' => sub {
 
   print "using local path as sapmles soure: '".$self->step->conf()->{samples_path}."'\n";
 
-  warn "Пытаемся сохранить сэмплы для цели с пустым ('') имененм. Скорее всего это не то что надо" if $self->name eq '';
+  warn "Пытаемся сохранить сэмплы для цели с пустым ('') именем. Скорее всего это не то что надо" if $self->name eq '';
 
   my $samples_path = path($self->step->conf()->{samples_path})->child($self->name);
   $self->sklad->samples->add('', $samples_path->child('*'));
